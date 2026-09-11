@@ -53,3 +53,9 @@ Fresh target capture and USB mapping; accurate Grid measurement/topology and
 verified VRM ingestion; Grafana collection; stale-data handling; PV field
 validation; missing main VRM PV tile. Completed code work and live validation
 must be recorded separately in CHANGELOG.md.
+
+## 11 September 2026 — Grid observability code
+
+Implemented external SSH/D-Bus reader, Prometheus exporter and Grafana V/Hz
+dashboard with freshness handling and tests. Live collection and VRM Grid
+resolution are pending; no input-power measurement has been invented.

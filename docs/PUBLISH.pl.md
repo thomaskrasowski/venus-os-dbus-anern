@@ -65,6 +65,10 @@ skopiowanego z GitHub Settings → Emails. Nie używaj cudzego adresu.
 Folder przygotowany przez Codex używa lokalnie loginu i adresu
 thomaskrasowski@users.noreply.github.com; możesz wybrać swój zweryfikowany noreply.
 
+Jeśli launcher py zgłasza błąd instalacji Pythona, uruchom testy bezpośrednio
+przez python.exe z własnej instalacji. Ten projekt nie wymaga instalowania
+zależności do testów offline.
+
 ## 4. Utwórz publiczne repo i opublikuj kod
 
 Te polecenia wykonaj jeden raz, gdy repo jeszcze nie istnieje, a origin jest pusty:

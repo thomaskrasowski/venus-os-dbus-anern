@@ -85,3 +85,10 @@ No automatic installer or device-control capability is supplied.
 See [third-party notices](THIRD-PARTY-NOTICES.md). Product names describe intended
 compatibility only. This project is not affiliated with, endorsed by or certified
 by Victron Energy, Anern or Voltronic Power.
+
+## Grid observability
+
+[Implementation and VRM investigation](docs/GRID.md): SSH/D-Bus probe,
+external Prometheus exporter and [Grafana dashboard](monitoring/grafana-ac-input.json).
+V/Hz and freshness have offline tests. Live collection, dashboard rendering
+and VRM Grid ingestion are not yet verified.

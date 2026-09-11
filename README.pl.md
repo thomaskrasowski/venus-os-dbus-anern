@@ -46,3 +46,9 @@ nie potwierdza stabilnego przypisania przez /dev/serial/by-id/.
 noty copyright i licencji, również komercyjnie. Nie wymaga publikowania zmian.
 Zastrzeżenie odpowiedzialności obowiązuje tylko w zakresie dopuszczonym prawem.
 Nazwy produktów należą do ich właścicieli i służą opisowi kompatybilności.
+
+## Wykresy Grid
+
+Dodaliśmy sondę D-Bus przez SSH, exporter Prometheus i dashboard Grafana
+obejmujące V/Hz wejścia oraz świeżość danych. [Instrukcja i VRM](docs/GRID.md).
+Wdrożenie na serwerach, rzeczywiste wykresy i naprawa VRM są jeszcze do wykonania.

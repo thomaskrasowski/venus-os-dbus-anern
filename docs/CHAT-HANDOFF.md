@@ -57,3 +57,8 @@ The owner chose public GitHub publication with MIT, English/Polish documentation
 and Grid graphs in both VRM and Grafana.
 Verify live source/USB mapping and AC input capabilities. Do not deploy, restart,
 change DVCC/BMS limits or publish a virtual Solar Charger as part of repository preparation.
+
+Grid tools now exist in tools/grid_probe.py and tools/grid_exporter.py;
+monitoring/ contains Grafana JSON and a scrape example. Read GRID.md.
+Live values, target mapping, SSH access, monitoring-host configuration
+and VRM ingestion still need verification. Preserve the production driver.

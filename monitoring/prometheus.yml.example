@@ -1,0 +1,8 @@
+# Merge this job into existing scrape_configs; do not replace the whole config.
+scrape_configs:
+  - job_name: anern-grid
+    scrape_interval: 15s
+    scrape_timeout: 5s
+    static_configs:
+      # Address as seen from Prometheus, including its container network namespace.
+      - targets: ['EXPORTER_HOST:9786']
