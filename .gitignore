@@ -1,0 +1,39 @@
+# Runtime data / captures / credentials
+captures/
+private-notes/
+exports/
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+id_rsa*
+id_ed25519*
+*token*.json
+cookies*
+conversations*.json
+chat.html
+pv-yield.json
+*.log
+*.sqlite*
+*.tar.gz
+*.tgz
+*.zip
+# Supervisor runtime state
+supervise/
+lock
+current
+# Backups / Python
+*.bak
+*.bak*
+*.before-*
+*.with-*
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

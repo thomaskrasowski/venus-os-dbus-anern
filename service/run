@@ -1,0 +1,5 @@
+#!/bin/sh
+# Reference service from the conversation; not an automatic installer.
+exec 2>&1
+echo "Starting dbus-anern-inverter2"
+exec python /data/apps/dbus-anern-inverter2/dbus-anern.py
