@@ -103,5 +103,21 @@ connection, including read-only SSH. Autonomous/background connections and
 polling are prohibited. Existing monitoring scripts are optional owner-operated
 tools, not authorization to execute them. See [owner rules](docs/OWNER-RULES.md).
 
-The 2026-09-14 update changes organization and documentation only. The driver,
-tools, tests, service scripts and monitoring definitions are unchanged.
+The relocation update changed organization and documentation only. Subsequent
+local diagnostic additions are described below; the driver, existing tools and
+service scripts remain unchanged.
+
+## Power dashboard and battery stability diagnostics
+
+[Read-only capture and dashboard guide](docs/POWER-DIAGNOSTICS.md): finite
+owner-run Cerbo captures plus a self-contained offline dashboard for separate
+battery sources, missing SOC, CAN statistics and Bluetooth connection evidence.
+Home Assistant is reserved as a later additional source. Generate the synthetic
+preview with `python tools/power_diagnostics.py --demo`.
+
+The native [Grafana dashboard definition](monitoring/grafana-power-observatory.json)
+is published in Minizon Grafana under `60 - Client Services` as
+`Cerbo Power Observatory`. No matching live telemetry exists yet, so its panels
+correctly show no data until a reviewed collector exports the documented series.
+
+No Cerbo connection, installation or live hardware validation was performed.

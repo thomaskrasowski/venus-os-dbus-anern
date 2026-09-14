@@ -2,6 +2,15 @@
 
 This repository records limitations instead of hiding them behind a working dashboard.
 
+## P1 - JK-BMS CAN / Bluetooth intermittent telemetry (owner report 2026-09-14)
+
+Battery2 on CAN sometimes loses SOC while voltage/current are visible.
+Battery1 Bluetooth on Cerbo also loses connection. Exact driver/model details
+and time-correlated captures are pending. Overview V/A can come from system
+fallback sources; this symptom alone does not establish partial CAN delivery.
+The new [finite capture and offline dashboard](POWER-DIAGNOSTICS.md) preserve
+source identity and validity for diagnosis. No root cause or live fix is claimed.
+
 ## P0 - capture exact deployed source / adapter
 
 The owner reports a working system after USB replacement. The local running-file import is recorded,
