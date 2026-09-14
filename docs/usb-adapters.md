@@ -1,5 +1,14 @@
 # USB replacement and multi-adapter mapping
 
+## Owner rules, effective 2026-09-14
+
+The owner verifies every Cerbo setting and performs all deployment.
+Assistants must ask and wait for explicit approval before EACH Cerbo connection,
+including read-only SSH/SCP/SFTP. Never connect autonomously or in the background.
+Existing exporters and diagnostic tools must not be launched by assistants.
+The commands below are reference instructions for owner-operated work.
+See [OWNER-RULES.md](OWNER-RULES.md).
+
 ## Current report vs known configuration
 
 The user reports the replacement adapter works immediately. Its identity is not yet known to this repository.

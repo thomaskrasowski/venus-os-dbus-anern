@@ -1,6 +1,14 @@
+
 # GitHub workflow
 
-The owner has chosen a public repository and MIT licensing.
-Follow [the current publication guide](PUBLISH.pl.md).
-The earlier recommendation to start privately is superseded.
-Keep raw chat exports, captures, credentials and runtime state outside Git.
+Local repository: C:/Users/thoma/Documents/Codex/cerbo
+
+Public destination: thomaskrasowski/venus-os-dbus-anern
+
+Follow the [English publication guide](PUBLISH.md).
+An [additional Polish translation](PUBLISH.pl.md) is available.
+
+Local gh authentication is separate from an application's GitHub connector.
+The owner creates/pushes the repository after reviewing the prepared files.
+Repository publication does not deploy anything to Cerbo.
+See [owner access and deployment rules](OWNER-RULES.md).

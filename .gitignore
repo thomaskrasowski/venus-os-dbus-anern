@@ -1,4 +1,6 @@
 # Runtime data / captures / credentials
+work/
+outputs/
 captures/
 private-notes/
 exports/

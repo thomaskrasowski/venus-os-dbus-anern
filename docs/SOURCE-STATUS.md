@@ -26,3 +26,16 @@ Before deployment, capture current source and supervisor scripts, verify hashes
 and adapter association and compare to this baseline. Preserve private captures.
 Before claiming a hardware-tested release, record installed commit/version,
 target firmware, verified measurements and systemcalc/DVCC/VRM behavior.
+
+
+## Relocation — 2026-09-14
+
+The checkout and complete Git history were moved to
+C:/Users/thoma/Documents/Codex/cerbo. Existing local source copies are retained
+under ignored private-notes/current-scripts/, and the historical Word document
+under ignored private-notes/archive/. work/ contains private preparation records.
+outputs/ contains local guides and archives; none of these directories is published.
+
+All moved file contents were hash-verified. No driver, tool, service, test or
+monitoring-definition changes were made. No Cerbo connection was attempted.
+The owner performs deployment and checks all settings; see OWNER-RULES.md.

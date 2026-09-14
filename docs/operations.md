@@ -1,5 +1,14 @@
 # Operations: preserve the working installation
 
+## Owner rules, effective 2026-09-14
+
+The owner verifies every Cerbo setting and performs all deployment.
+Assistants must ask and wait for explicit approval before EACH Cerbo connection,
+including read-only SSH/SCP/SFTP. Never connect autonomously or in the background.
+Existing exporters and diagnostic tools must not be launched by assistants.
+The commands below are reference instructions for owner-operated work.
+See [OWNER-RULES.md](OWNER-RULES.md).
+
 The package is for version control, not automatic redeployment. Existing services continue as they are.
 
 ## Retrieve just the current source from Windows

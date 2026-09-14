@@ -59,3 +59,16 @@ must be recorded separately in CHANGELOG.md.
 Implemented external SSH/D-Bus reader, Prometheus exporter and Grafana V/Hz
 dashboard with freshness handling and tests. Live collection and VRM Grid
 resolution are pending; no input-power measurement has been invented.
+
+
+## 14 September 2026 — project organization and owner workflow
+
+Moved the checkout and Git history to C:/Users/thoma/Documents/Codex/cerbo.
+Preserved the local source copies and historical Word file under private-notes/.
+The repository uses English names and primary documentation; Polish is additional.
+The owner is testing the baseline and did not request code changes.
+
+The owner personally checks all Cerbo settings and performs deployment.
+Each proposed Cerbo connection requires a fresh explicit access prompt, even if
+read-only. Autonomous/background connections are prohibited. These preferences
+are persisted in AGENTS.md and OWNER-RULES.md.

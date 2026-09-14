@@ -5,7 +5,7 @@ This is a curated handover, **not a complete chat export**. Read `SOURCE-STATUS.
 ## Objective
 
 Maintain a read-only PI30 -> Venus D-Bus bridge for a 6200 W third-party inverter on a Cerbo GX MK2.
-Develop in Git, test offline, then make explicitly approved, reversible changes to the live GX.
+Develop locally when requested. The owner tests, checks all settings and performs live deployment.
 
 ## Last confirmed installation facts
 
@@ -55,10 +55,24 @@ The owner supplied a local file named dbus-anern.running.py; it now replaces the
 reconstruction in src/. See SOURCE-STATUS.md for the hash and remaining limitations.
 The owner chose public GitHub publication with MIT, English/Polish documentation,
 and Grid graphs in both VRM and Grafana.
-Verify live source/USB mapping and AC input capabilities. Do not deploy, restart,
+Prefer owner-supplied local captures. Ask before every proposed Cerbo connection.
+Never connect in the background. Do not deploy, restart,
 change DVCC/BMS limits or publish a virtual Solar Charger as part of repository preparation.
 
 Grid tools now exist in tools/grid_probe.py and tools/grid_exporter.py;
 monitoring/ contains Grafana JSON and a scrape example. Read GRID.md.
 Live values, target mapping, SSH access, monitoring-host configuration
 and VRM ingestion still need verification. Preserve the production driver.
+
+
+## Current working boundary — 2026-09-14
+
+The project is now at C:/Users/thoma/Documents/Codex/cerbo, with .git at its root.
+All repository names and primary documentation are English. Polish remains
+supplementary. Read AGENTS.md and OWNER-RULES.md before doing any work.
+The owner handles deployment and must check every Cerbo setting. Every proposed
+connection requires a fresh prompt and explicit answer; background access is
+prohibited. No runtime code changes are requested while the owner tests.
+
+GitHub target: thomaskrasowski/venus-os-dbus-anern. Follow PUBLISH.md.
+The optional Grid tools remain unmodified and must not be launched by assistants.

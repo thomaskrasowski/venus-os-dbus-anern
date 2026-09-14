@@ -19,3 +19,13 @@ Cerbo SSH responded but unattended authentication failed.
 
 No Cerbo deployment, restart, BMS/DVCC change or hardware test occurred.
 VRM Grid and the main Solar Charger tile remain unresolved.
+
+
+## 2026-09-14 — relocation/documentation validation
+
+All moved files were compared to their pre-move SHA-256 values.
+Runtime source, tooling, service scripts, tests and monitoring definitions are
+unchanged. Documentation links, English path names and ignored local folders
+were checked. No new runtime test suite was needed for the documentation changes.
+No Cerbo, SSH or other energy-device connection was attempted.
+The earlier 22-test result remains historical, not a fresh hardware validation.

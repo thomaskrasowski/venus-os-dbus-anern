@@ -1,5 +1,12 @@
 # Publiczne repozytorium GitHub — PowerShell krok po kroku
 
+[English publication guide](PUBLISH.md)
+
+Główna, aktualna instrukcja jest po angielsku. Poniższy dokument jest dodatkiem.
+Po przeniesieniu lokalny katalog ma już historię Git; nie inicjalizuj go ponownie.
+
+Aktualny katalog projektu: C:/Users/thoma/Documents/Codex/cerbo. Sterownik wdraża właściciel. Każde połączenie asystenta z Cerbo, również tylko do odczytu, wymaga osobnego pytania i wyraźnej zgody. Połączenia w tle są zabronione.
+
 Proponowana nazwa: **thomaskrasowski/venus-os-dbus-anern**.
 Angielski README jest główny; README.pl.md to polskie wprowadzenie.
 Opis i topics pomagają opisać kompatybilność, ale nie gwarantują pozycji wyszukiwania.
@@ -7,7 +14,7 @@ Opis i topics pomagają opisać kompatybilność, ale nie gwarantują pozycji wy
 ## 1. Otwórz katalog gotowego repozytorium
 
 ~~~powershell
-Set-Location 'SCIEZKA_DO_ROZPAKOWANEGO_REPOZYTORIUMenus-os-dbus-anern'
+Set-Location 'C:\Users\thoma\Documents\Codex\cerbo'
 git status
 git log --oneline -5
 git remote -v

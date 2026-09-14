@@ -1,5 +1,15 @@
 # Changelog
 
+## 2026-09-14 — relocation, English documentation and owner access rules
+
+- Moved the complete local checkout/Git history to the cerbo project directory.
+- Retained local captures and Word history in ignored private-notes/.
+- Added primary English publication instructions and a separate Polish safety notice.
+- Recorded mandatory owner review of every setting, owner-performed deployment,
+  per-connection access approval and the prohibition on background Cerbo access.
+- Preserved all source, tools, tests, service scripts and monitoring files.
+- No Cerbo connection, deployment or runtime tests were performed in this update.
+
 ## 2026-09-11 — public repository preparation
 
 - Imported the owner's local driver file; recorded source hash and provenance limits.

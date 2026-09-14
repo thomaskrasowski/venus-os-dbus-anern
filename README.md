@@ -1,6 +1,6 @@
 # Anern 6200 PI30 inverter monitoring for Venus OS
 
-[Polski](README.pl.md) · [Safety](SAFETY.md) · [History](docs/HISTORY.md) ·
+[Polish README](README.pl.md) · [Safety](SAFETY.md) · [History](docs/HISTORY.md) ·
 [Operations](docs/operations.md) · [Source status](docs/SOURCE-STATUS.md)
 
 An independent, experimental Python D-Bus integration for monitoring an
@@ -76,7 +76,8 @@ No automatic installer or device-control capability is supplied.
 - [English architecture and path map](docs/architecture.md)
 - [Polish introduction](README.pl.md)
 - [Development history](docs/HISTORY.md) and [handover](docs/CHAT-HANDOFF.md)
-- [Public GitHub publication steps — Polish](docs/PUBLISH.pl.md)
+- [Public GitHub publication steps](docs/PUBLISH.md) ([Polish translation](docs/PUBLISH.pl.md))
+- [Owner access and deployment rules](docs/OWNER-RULES.md)
 - [Contributing](CONTRIBUTING.md) and [security](SECURITY.md)
 
 ## License and names
@@ -92,3 +93,15 @@ by Victron Energy, Anern or Voltronic Power.
 external Prometheus exporter and [Grafana dashboard](monitoring/grafana-ac-input.json).
 V/Hz and freshness have offline tests. Live collection, dashboard rendering
 and VRM Grid ingestion are not yet verified.
+
+
+## Owner-controlled deployment and access
+
+The owner checks all Cerbo settings and performs all driver updates/deployment.
+An assistant must ask for explicit permission before every proposed Cerbo
+connection, including read-only SSH. Autonomous/background connections and
+polling are prohibited. Existing monitoring scripts are optional owner-operated
+tools, not authorization to execute them. See [owner rules](docs/OWNER-RULES.md).
+
+The 2026-09-14 update changes organization and documentation only. The driver,
+tools, tests, service scripts and monitoring definitions are unchanged.

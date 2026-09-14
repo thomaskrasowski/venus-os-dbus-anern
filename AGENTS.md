@@ -1,5 +1,28 @@
 # Instructions for contributors and coding assistants
 
+## Persistent owner rules — 2026-09-14
+
+These are the owner's explicit operating rules and persistent project memory.
+They override older workflow suggestions in this repository.
+
+- Respond in English. Use English filenames, paths, identifiers, comments and
+  primary documentation. Polish is supplementary documentation such as README.pl.md.
+- The owner personally reviews and approves ALL Cerbo settings.
+- The owner performs Cerbo driver updates and deployment. Do not upload/install
+  code on Cerbo, change settings, restart services or operate the installation.
+- Ask and wait for explicit approval BEFORE EVERY SSH/SCP/SFTP or other Cerbo
+  connection, including read-only diagnostics. Describe the target and precise
+  read-only purpose/commands. Prior access, saved credentials, keys, successful
+  connections and GitHub authorization do not constitute standing permission.
+- NEVER connect to Cerbo autonomously or in the background. Do not launch
+  exporters, probes, repeated polling, tunnels, scheduled jobs or auto-reconnects.
+- Any individually approved access is read-only and limited to the approved
+  scope. Ask again before a subsequent connection.
+- Prefer local files supplied by the owner. Repository organization/publication
+  does not authorize source changes; the owner is testing the existing baseline.
+- Existing SSH/exporter scripts are dormant, optional owner-operated tools.
+  Their presence and documentation are not authorization for an assistant to run them.
+
 Read `docs/SOURCE-STATUS.md`, `docs/CHAT-HANDOFF.md` and `docs/known-issues.md` first.
 
 ## Authority
@@ -28,7 +51,7 @@ The latest user update is that a replacement USB adapter works. Its by-id path i
 
 ## Engineering
 
-Use small branches and reviewable diffs. Back up working files before approved deployment.
+Use small branches and reviewable diffs. The owner handles backups and deployment.
 Test CRC/framing offline. Distinguish a read query sent over serial from a setting write.
 A running process and a D-Bus registration do not prove healthy data or VRM accounting.
 Use BusyBox-compatible target commands (`ps`, `head -n 20`, `/proc`, `svc`, `svstat`).

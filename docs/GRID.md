@@ -1,5 +1,14 @@
 # Grid graphs: evidence, implementation and remaining work
 
+## Owner rules, effective 2026-09-14
+
+The owner verifies every Cerbo setting and performs all deployment.
+Assistants must ask and wait for explicit approval before EACH Cerbo connection,
+including read-only SSH/SCP/SFTP. Never connect autonomously or in the background.
+Existing exporters and diagnostic tools must not be launched by assistants.
+The commands below are reference instructions for owner-operated work.
+See [OWNER-RULES.md](OWNER-RULES.md).
+
 ## Implemented locally
 
 - Read-only D-Bus probe over SSH: tools/grid_probe.py.
