@@ -1,5 +1,18 @@
 # Development history
 
+## 15 September 2026 — live VRM evidence and documentation split
+
+The owner confirmed from an interactive Cerbo session that the running driver
+matches the GitHub source, is connected, and reports AC-input voltage/frequency.
+The replacement USB adapter is `BG041YD3`, currently reached through the
+driver's ttyUSB0 fallback. Venus OS system Grid-power paths were unavailable,
+active-input source was 240, and no Grid/Multi/VE.Bus service appeared.
+
+Review of QPIGS and Victron SystemCalc confirmed that measured inverter-output
+W/VA cannot be used as grid-input power. The driver was left unchanged. A
+separate connection guide was added, VRM findings remain in `GRID.md`, and
+Grafana/Prometheus notes moved to `GRAFANA.md` for later work.
+
 This is a curated technical history, not a verbatim chat export and not a claim
 that every historical experiment worked. Original discussion:
 [Improve JK BMS Monitoring](chatgpt-conversation://6a95570c-aaec-83ed-bcad-f7b5cba54244).

@@ -1,6 +1,7 @@
 # Source status and provenance
 
-Prepared on 2026-09-11. No live deployment was performed.
+Prepared on 2026-09-11 and updated from owner-run checks on 2026-09-15.
+No deployment was performed as part of this repository update.
 
 Latest owner-supplied configuration evidence (2026-09-15 20:55:51 UTC):
 [CAN/BLE snapshot findings](CAN-BLE-SNAPSHOT-2026-09-15.md). The owner ran the
@@ -12,13 +13,16 @@ connection. This does not establish healthy telemetry or a deployed fix.
 | src/dbus-anern.py | Copied byte-for-byte from the owner's local file named dbus-anern.running.py |
 | SHA-256 of supplied raw file | 77f248ea522884c76831b8338b7bacc4ea8281e31a293f3c409c22bf01806847 |
 | Second local file, dbus-anern.py | Same bytes and SHA-256 |
-| Fresh remote authentication | Not performed; filename and modification time alone cannot prove live provenance |
-| service/run and service/log/run | Conversation-derived templates; not fresh remote captures |
+| Live source comparison | On 2026-09-15 the owner downloaded the GitHub raw source on the Cerbo; Python compilation succeeded and `diff -u` against the running file produced no output |
+| service/run | Owner output confirms it executes `/data/apps/dbus-anern-inverter2/dbus-anern.py` with Python |
+| service/log/run | Conversation-derived template; not a fresh remote capture |
 | Earlier package | Reconstructed compact driver; superseded by the supplied local file |
-| Replacement USB adapter | Owner reports successful operation; new by-id identity remains unverified |
+| Replacement USB adapter | `usb-FTDI_FT232R_USB_UART_BG041YD3-if00-port0 -> ../../ttyUSB0`; running driver reports `/dev/ttyUSB0` |
 | Original Word document | Retained in owner's original local folder; not included in public repository |
 
-The baseline retains the old adapter selector, fallback, static mode/metadata,
+The baseline retains the old `BG03FXF0` adapter selector and therefore reaches
+the confirmed `BG041YD3` adapter through its `/dev/ttyUSB0` fallback. It also
+retains static mode/metadata,
 initial zeros, stale values after failed polls and variant-dependent PV parsing.
 The absent /Yield/Power path is confirmed in the imported code; nearby historical
 comments referring to it do not make it a registered path.
@@ -28,7 +32,9 @@ identifies the supplied local file, not a guarantee of identical checkout bytes
 under every Git configuration. No known-working release tag has been created.
 
 Before deployment, capture current source and supervisor scripts, verify hashes
-and adapter association and compare to this baseline. Preserve private captures.
+and adapter association and compare to this baseline. Replace the ttyUSB fallback
+with an explicit reviewed adapter selection before relying on multiple serial
+devices. Preserve private captures.
 Before claiming a hardware-tested release, record installed commit/version,
 target firmware, verified measurements and systemcalc/DVCC/VRM behavior.
 
@@ -104,3 +110,17 @@ Later terminal `ERROR-PASSIVE` state and frozen counters do not date the exact
 traffic stop. `vesmart-server` `0.5.14-r0` is installed but was absent from the supplied
 process and service listings; `bluetoothd` was running. No hardware fix, current
 firmware identity for the BMS, or Bluetooth/CAN cause has been established.
+
+## Owner-run live verification — 2026-09-15
+
+The supplied terminal output confirms Venus OS v3.79 build `20260826152305`,
+an up driver with `/Connected = 1`, AC input around 234 V / 50 Hz, and the
+adapter identity above. System paths `/Ac/Grid/L1/Power` and
+`/Ac/Grid/L2/Power` returned unavailable values (`[]`), while
+`/Ac/ActiveIn/Source` returned 240. No Grid, Multi or VE.Bus service appeared
+in the supplied D-Bus service list.
+
+These observations were made by the owner in an interactive SSH session and
+pasted into the project conversation. The assistant did not connect to the
+Cerbo. They establish the current driver/source match and the absence of a
+system Grid-power source; they are not a deployment or a full hardware test.

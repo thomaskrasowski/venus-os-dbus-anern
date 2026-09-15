@@ -43,12 +43,14 @@ The owner reports CAN and battery1 BLE were implemented together and dropouts
 started together. There is no pre-BLE CAN-only baseline; this timing does not
 prove that BLE causes the CAN fault.
 
-## P0 - capture exact deployed source / adapter
+## P0 - replace the ttyUSB fallback before adding serial devices
 
-The owner reports a working system after USB replacement. The local running-file import is recorded,
-but fresh remote provenance is unverified. Before any
-new installation, export and compare the real files. The old serial + ttyUSB0 fallback must not be
-used to identify two or three independent devices. Avoid multiple readers/probers on one serial port.
+The owner confirmed that the deployed source matches the GitHub source and that
+the replacement adapter is `BG041YD3`. The source still searches for the old
+`BG03FXF0` serial and reaches the new adapter through `/dev/ttyUSB0`. Before any
+new installation or additional serial device, select the confirmed by-id adapter
+explicitly and fail clearly when it is absent. Avoid multiple readers/probers on
+one serial port.
 
 ## P0 - control/systemcalc safety
 
@@ -68,6 +70,8 @@ No fix or authoritative VRM outage was confirmed.
 ## P1 - incomplete inverter topology and state
 
 The source is an inverter-only abstraction of an inverter/charger. Grid V/Hz are available, grid W/A are not.
+Owner-run checks on Venus OS v3.79 found no Grid/Multi/VE.Bus service,
+`/Ac/Grid/L1/Power = []` and `/Ac/ActiveIn/Source = 240`.
 `/Mode=2` is a static placeholder, not a truthful mapping of every QMOD state. Full active-input topology
 is missing. The path `L1` is local to the single-phase device and must not be confused with the household
 phase L2 feeding inverter2. Do not 'fix' a grid tile by inventing input power or faking VE.Bus.

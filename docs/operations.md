@@ -10,6 +10,8 @@ The commands below are reference instructions for owner-operated work.
 See [OWNER-RULES.md](OWNER-RULES.md).
 
 The package is for version control, not automatic redeployment. Existing services continue as they are.
+For physical wiring, the confirmed adapter and first checks, start with
+[Connect the inverter](INVERTER-CONNECTION.md).
 
 ## Retrieve just the current source from Windows
 
@@ -52,6 +54,10 @@ git diff --no-index src/dbus-anern.py captures/dbus-anern.running.py
 
 Review the diff, especially adapter selection, `/Yield/Power`, any virtual solarcharger and any writes.
 Then deliberately import the reviewed source to a branch and update source-status provenance.
+
+The owner-run comparison on 2026-09-15 showed no difference between the live
+driver and the GitHub source. Replacing that file with the current repository
+version would therefore make no functional change and would not create VRM Grid power.
 
 ## Existing supervisor commands (run only when intended)
 

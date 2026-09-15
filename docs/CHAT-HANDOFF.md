@@ -22,8 +22,10 @@ Develop locally when requested. The owner tests, checks all settings and perform
 - Service: `/service/dbus-anern-inverter2`; logs: `/data/log/dbus-anern-inverter2/current`.
 - D-Bus name: `com.victronenergy.inverter.anern2`; instance 40; custom name `inverter2`.
 - Local PV counter: `/data/apps/dbus-anern-inverter2/pv-yield.json`.
-- The owner now reports that the USB adapter was replaced and works immediately.
-  The new USB identity is not in the supplied evidence. OLD adapter serial: BG03FXF0.
+- The replacement USB adapter is now confirmed as
+  `usb-FTDI_FT232R_USB_UART_BG041YD3-if00-port0`, linked to `/dev/ttyUSB0`.
+  The source still searches for the old `BG03FXF0` serial, so the live process
+  currently works through its ttyUSB0 fallback.
 
 ## Electrical / control separation
 
@@ -49,7 +51,9 @@ One inverter service only. Internal PV is `/Pv/0/Voltage`, `/Pv/0/Current`, `/Pv
 No virtual `solarcharger.anern2pv`. No top-level `/Soc` or DVCC `/Link/*` controls.
 `/Yield/Power` was removed in the last diagnostic patch. The counters under `/Yield/User`,
 `/Yield/System` and `/History/Daily/*` remain local estimates, not guaranteed VRM statistics.
-The current file on the Cerbo may differ. Export it before replacing anything.
+On 2026-09-15 the owner downloaded the GitHub raw source on the Cerbo, compiled
+it successfully and ran `diff -u` against the installed file; no differences
+were reported. Capture it again before a later replacement if either side changes.
 
 ## What was tried and must not be repeated blindly
 
@@ -64,6 +68,19 @@ The current file on the Cerbo may differ. Export it before replacing anything.
 8. BusyBox `ps -fp` and `head -30` were not supported; use `ps` and `head -n 30`.
 9. A previous assertion that Venus OS Large includes Grafana was corrected. Do not assume Grafana is installed.
 
+## VRM Grid conclusion — 2026-09-15
+
+Owner-run live checks found `/Connected = 1` and input around 234 V / 50 Hz,
+but system `/Ac/Grid/L1/Power` and `/Ac/Grid/L2/Power` were unavailable and
+`/Ac/ActiveIn/Source` was 240. No Grid, Multi or VE.Bus service was present in
+the supplied D-Bus service list.
+
+QPIGS supplies measured inverter output W/VA but no verified grid-input W/A/kWh.
+Do not relabel output power, derive grid import from asynchronous measurements,
+change the service type or publish a fake grid meter. A real supported AC meter
+or a separately verified input-power command for this exact protocol variant is
+required for truthful VRM Grid power.
+
 ## Current next step
 
 The owner supplied a local file named dbus-anern.running.py; it now replaces the
@@ -74,10 +91,11 @@ Prefer owner-supplied local captures. Ask before every proposed Cerbo connection
 Never connect in the background. Do not deploy, restart,
 change DVCC/BMS limits or publish a virtual Solar Charger as part of repository preparation.
 
-Grid tools now exist in tools/grid_probe.py and tools/grid_exporter.py;
-monitoring/ contains Grafana JSON and a scrape example. Read GRID.md.
-Live values, target mapping, SSH access, monitoring-host configuration
-and VRM ingestion still need verification. Preserve the production driver.
+Connection and installation facts are in `INVERTER-CONNECTION.md`. VRM Grid
+evidence remains in `GRID.md`; Grafana/Prometheus material has moved to
+`GRAFANA.md` for later work. Preserve the production driver. Before its next
+update, replace the historical adapter selector and ttyUSB fallback with an
+explicit reviewed selection of `BG041YD3`.
 
 
 ## Current working boundary — 2026-09-14
@@ -87,7 +105,8 @@ All repository names and primary documentation are English. Polish remains
 supplementary. Read AGENTS.md and OWNER-RULES.md before doing any work.
 The owner handles deployment and must check every Cerbo setting. Every proposed
 connection requires a fresh prompt and explicit answer; background access is
-prohibited. No runtime code changes are requested while the owner tests.
+prohibited. No runtime code change was made for the VRM request because the
+driver has no measured input-power source to publish truthfully.
 
 GitHub target: thomaskrasowski/venus-os-dbus-anern. Follow PUBLISH.md.
 The optional Grid tools remain unmodified and must not be launched by assistants.

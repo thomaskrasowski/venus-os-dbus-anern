@@ -9,19 +9,26 @@ Existing exporters and diagnostic tools must not be launched by assistants.
 The commands below are reference instructions for owner-operated work.
 See [OWNER-RULES.md](OWNER-RULES.md).
 
-## Current report vs known configuration
+## Confirmed adapter vs current source
 
-The user reports the replacement adapter works immediately. Its identity is not yet known to this repository.
-The OLD development adapter was `BG03FXF0`. The last shared code uses:
+On 2026-09-15 the owner supplied this live mapping:
+
+~~~text
+usb-FTDI_FT232R_USB_UART_BG041YD3-if00-port0 -> ../../ttyUSB0
+~~~
+
+The replacement adapter serial is therefore `BG041YD3`. The OLD development
+adapter was `BG03FXF0`, which is still selected by the current source:
 
 ```python
 ports = glob.glob(f"/dev/serial/by-id/*{FTDI_SERIAL}*")
 PORT = ports[0] if ports else "/dev/ttyUSB0"
 ```
 
-Consequently 'working straight away' is consistent with either a working by-id match or a fallback.
-Do not infer which occurred. In particular, after a reboot/replug the fallback can target the wrong device
-when several independent inverters or BMS adapters are connected.
+The driver reports `PI30 RS232 /dev/ttyUSB0`, so it is using the fallback rather
+than the new by-id identity. It currently works, but after a reboot/replug the
+fallback can target the wrong device when several independent inverters or BMS
+adapters are connected.
 
 ## Observe without disrupting monitoring
 
@@ -39,12 +46,14 @@ depends on whether the driver was restarted and how the source now resolves the 
 
 | Device | Physical bank | Adapter by-id | Status |
 |---|---|---|---|
-| inverter2 | bat2a + two real SmartSolars | NEW ID PENDING | Owner reports working |
+| inverter2 | bat2a + two real SmartSolars | `BG041YD3` | Connected and polling through ttyUSB0 fallback |
 | inverter1 | independent bat1 | NOT CAPTURED | Do not assign inverter2's instance/config |
 
-Use a separate reviewed change to implement exact by-id selection and fail-closed behavior with no
-silent ttyUSB fallback. A single two-port adapter may have a shared isolated side; verify isolation per
-inverter, not only a marketing label. Isolation and pinout for the new product have not been inspected here.
+Use a separate reviewed change to implement exact `BG041YD3` by-id selection
+and fail-closed behavior with no silent ttyUSB fallback. A single two-port
+adapter may have a shared isolated side; verify isolation per inverter, not
+only a marketing label. Isolation for the new product has not been independently
+inspected here.
 
 ## Wiring record, not universal pinout
 

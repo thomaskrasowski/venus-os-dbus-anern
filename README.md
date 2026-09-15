@@ -1,6 +1,7 @@
 # Anern 6200 PI30 inverter monitoring for Venus OS
 
-[Polish README](README.pl.md) · [Safety](SAFETY.md) · [History](docs/HISTORY.md) ·
+[Polish README](README.pl.md) · [Safety](SAFETY.md) ·
+[Connect the inverter](docs/INVERTER-CONNECTION.md) ·
 [Operations](docs/operations.md) · [Source status](docs/SOURCE-STATUS.md)
 
 An independent, experimental Python D-Bus integration for monitoring an
@@ -15,11 +16,11 @@ This is a community driver/add-on, not an official Victron or Anern plugin.
 ## Status and compatibility
 
 The owner reports successful monitoring after replacing the USB adapter.
-The repository now includes the locally supplied file named
-dbus-anern.running.py as its driver baseline; its hash is recorded in
-[source status](docs/SOURCE-STATUS.md). It has not been compared with a fresh
-live Cerbo capture in this session. This is an experimental source release,
-not a newly hardware-tested deployment.
+The repository includes the locally supplied file named dbus-anern.running.py
+as its driver baseline; its hash is recorded in [source status](docs/SOURCE-STATUS.md).
+On 15 September 2026 the owner downloaded the GitHub source on the Cerbo,
+compiled it and compared it with the running file; `diff` reported no changes.
+This remains an experimental source release, not a hardware-tested release.
 
 | Item | Evidence / limitation |
 |---|---|
@@ -28,7 +29,7 @@ not a newly hardware-tested deployment.
 | Runtime | Last reported Venus OS v3.79 Large / Python 3.12 |
 | Queries | QID, QMN, QMOD, QPIGS; no setting commands |
 | Other PI30 inverters | Compatibility must be verified; shared protocol does not prove identical fields |
-| USB replacement | Reported working; new persistent by-id identity still needs verification |
+| USB replacement | `usb-FTDI_FT232R_USB_UART_BG041YD3-if00-port0`; currently reached through the ttyUSB0 fallback |
 | VRM | Custom paths are not automatically guaranteed to be recorded or graphed |
 
 QMN reported VMII-NXPW5KW; that does not independently confirm the retail
@@ -57,9 +58,11 @@ was removed after systemcalc/DVCC issues. Native BMS/SmartSolar services remain 
 ## Start here
 
 1. Read the safety notice, [known issues](docs/known-issues.md) and source status.
-2. Capture and compare the working driver and service files using [Operations](docs/operations.md).
-3. Verify serial identity, pinout, isolation, phase/bank mapping and field interpretation.
-4. Run offline checks before reviewing any installation change:
+2. Follow [Connect the inverter](docs/INVERTER-CONNECTION.md) for the confirmed
+   wiring record, adapter identity, service layout and read-only checks.
+3. Capture and compare the working driver and service files using [Operations](docs/operations.md).
+4. Verify serial identity, pinout, isolation, phase/bank mapping and field interpretation.
+5. Run offline checks before reviewing any installation change:
 
 ~~~sh
 python -m unittest discover -s tests -v
@@ -75,6 +78,9 @@ No automatic installer or device-control capability is supplied.
 
 - [Owner-confirmed installation topology](docs/TOPOLOGY.md)
 - [English architecture and path map](docs/architecture.md)
+- [Connect the inverter](docs/INVERTER-CONNECTION.md)
+- [VRM Grid troubleshooting](docs/GRID.md)
+- [AC-input Grafana monitoring](docs/GRAFANA.md)
 - [Polish introduction](README.pl.md)
 - [Development history](docs/HISTORY.md) and [handover](docs/CHAT-HANDOFF.md)
 - [Public GitHub publication steps](docs/PUBLISH.md) ([Polish translation](docs/PUBLISH.pl.md))
@@ -88,12 +94,16 @@ See [third-party notices](THIRD-PARTY-NOTICES.md). Product names describe intend
 compatibility only. This project is not affiliated with, endorsed by or certified
 by Victron Energy, Anern or Voltronic Power.
 
-## Grid observability
+## VRM and Grafana
 
-[Implementation and VRM investigation](docs/GRID.md): SSH/D-Bus probe,
-external Prometheus exporter and [Grafana dashboard](monitoring/grafana-ac-input.json).
-V/Hz and freshness have offline tests. Live collection, dashboard rendering
-and VRM Grid ingestion are not yet verified.
+[VRM Grid troubleshooting](docs/GRID.md) records the confirmed live results and
+why the present PI30 data cannot supply Grid W/A/kWh. The driver already
+publishes measured inverter output power, but that is not grid input power.
+
+[AC-input Grafana monitoring](docs/GRAFANA.md) now contains the separate
+Prometheus and V/Hz dashboard material. The broader power dashboard remains in
+[Power diagnostics](docs/POWER-DIAGNOSTICS.md). Live AC-input collection and
+dashboard rendering remain future work.
 
 
 ## Owner-controlled deployment and access
@@ -129,3 +139,7 @@ needed before considering a Bluetooth isolation test. Its
 [run instructions](docs/POWER-DIAGNOSTICS.md) describe the report and privacy limits.
 
 No Cerbo connection, installation or live hardware validation was performed.
+
+The 2026-09-15 update records owner-supplied live evidence and reorganizes the
+documentation. The driver, tools, service scripts and monitoring definitions
+remain unchanged and nothing was deployed from this repository update.
