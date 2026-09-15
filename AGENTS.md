@@ -23,6 +23,17 @@ They override older workflow suggestions in this repository.
 - Existing SSH/exporter scripts are dormant, optional owner-operated tools.
   Their presence and documentation are not authorization for an assistant to run them.
 
+## Git workflow — owner rule added 2026-09-15
+
+- Start every future Git change on a new, purpose-specific branch. Use the
+  `codex/` prefix unless the owner requests another branch name.
+- Do not commit directly to `main` and do not reuse a branch that already has
+  a pull request for a different logical change.
+- Push each change branch to GitHub and create a pull request for review.
+- Keep each pull request small and state tests, hardware checks not performed,
+  deployment status and material safety limitations.
+- Do not merge a pull request unless the owner explicitly asks for the merge.
+
 Read `docs/SOURCE-STATUS.md`, `docs/CHAT-HANDOFF.md` and `docs/known-issues.md` first.
 
 ## Authority

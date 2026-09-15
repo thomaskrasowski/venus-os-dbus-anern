@@ -30,6 +30,14 @@ A later connection requires a fresh prompt.
 Use owner-supplied local source files/captures by default. Existing tools are
 optional owner-operated utilities; documentation is not permission to run them.
 
+## Git branches and pull requests
+
+Effective 2026-09-15, every Git change must use a new purpose-specific branch,
+normally with the `codex/` prefix. Do not commit directly to `main` or add an
+unrelated change to a branch that already has a pull request. Push the branch
+and create a GitHub pull request so the owner can review the exact diff and test
+evidence. The owner must explicitly request any merge.
+
 ## Current development boundary
 
 Preserve the current driver and other executable files during organization and
