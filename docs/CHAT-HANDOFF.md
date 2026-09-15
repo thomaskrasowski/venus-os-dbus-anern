@@ -105,3 +105,27 @@ Grafana-only connection. The Prometheus datasource returned zero matching
 Cerbo/JK/Anern/power-monitor metric names, so the dashboard is a truthful empty
 shell pending a separately reviewed continuous exporter. No Cerbo connection
 or background polling was started.
+
+## First CAN fault evidence — 2026-09-15
+
+The owner ran `cerbo_diagnostics.py --samples 1` and supplied the output. The
+sample caught no `com.victronenergy.battery.*` service. System battery service,
+auto/active selection and SOC were invalid, while V/A came from the documented
+inverter2 voltage fallback. Therefore this observation is a complete battery
+service absence with fallback V/A, not proof of a BMS service publishing only
+some fields.
+
+`vecan1` was `ERROR-PASSIVE`; cumulative history showed 19 restarts, 52
+error-warning transitions, 67 error-passive transitions and 19 bus-off events.
+`vecan0` was `ERROR-ACTIVE` with zero such history, and both detected SmartSolar
+services named `socketcan_vecan0`. Treat `vecan1` as the leading battery2 CAN
+candidate until the physical/service mapping is verified. One sample cannot
+date the counter increments or identify cable, termination, power, BMS,
+transceiver, adapter or noise as the cause.
+
+The focused next owner-run command is documented in POWER-DIAGNOSTICS.md. The
+collector now supports finite `--scope can --interface vecan1` sampling and
+within-session deltas, and no longer duplicates one bulk D-Bus `NoReply` across
+every allowlisted path. This work was prepared and tested offline. No Cerbo
+connection, deployment, setting change, service action or hardware test was
+performed by the assistant.

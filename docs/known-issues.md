@@ -6,10 +6,20 @@ This repository records limitations instead of hiding them behind a working dash
 
 Battery2 on CAN sometimes loses SOC while voltage/current are visible.
 Battery1 Bluetooth on Cerbo also loses connection. Exact driver/model details
-and time-correlated captures are pending. Overview V/A can come from system
-fallback sources; this symptom alone does not establish partial CAN delivery.
+and time-correlated captures are pending. An owner-supplied 2026-09-15 sample
+caught no battery D-Bus service, invalid system SOC/source selection, and
+fallback V/A from `com.victronenergy.inverter.anern2`. `vecan1` was
+`ERROR-PASSIVE`, with cumulative history of 19 bus-off events/restarts, 52
+error-warning transitions and 67 error-passive transitions. `vecan0`, which
+the two SmartSolar services named as their connection, was `ERROR-ACTIVE` with
+zero controller fault history. This strongly prioritizes `vecan1` observation,
+but does not prove its physical mapping or identify the electrical/root cause.
+Overview V/A can come from system fallback sources; this capture did not
+establish partial CAN delivery.
 The new [finite capture and offline dashboard](POWER-DIAGNOSTICS.md) preserve
-source identity and validity for diagnosis. No root cause or live fix is claimed.
+source identity and validity for diagnosis. A compact CAN-only mode records
+counter deltas without opening D-Bus or CAN sockets. No root cause or live fix
+is claimed.
 
 ## P0 - capture exact deployed source / adapter
 
