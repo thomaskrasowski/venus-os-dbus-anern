@@ -19,6 +19,34 @@ That description is not interpreted as a confirmed 600 Ah capacity.
 Keep battery1/inverter1 separate from battery2/inverter2. A selected system
 battery source is not an aggregate of these banks.
 
+## First owner-supplied fault capture — 2026-09-15
+
+The supplied one-sample JSON capture caught the battery service absent from
+D-Bus. System battery service, selected battery service and SOC were invalid,
+while system voltage/current remained present. The system voltage source named
+`com.victronenergy.inverter.anern2`, so those V/A values were fallback inverter
+measurements. This sample does not show a battery service delivering V/A while
+omitting only SOC.
+
+`vecan1` was in `ERROR-PASSIVE` at capture time. Its cumulative controller
+counters were: 19 restarts, 52 error-warning transitions, 67 error-passive
+transitions and 19 bus-off events. The instantaneous bus error counters were
+zero. These are not expected steady-state signs for a healthy CAN interface,
+but one observation cannot establish when the events happened or what caused
+them. The nonzero `tx_dropped` value of 71 is also cumulative. Counter changes
+between observations matter more than these totals alone.
+
+`vecan0` was `ERROR-ACTIVE`, with zero recorded restart/error/bus-off history,
+and both detected SmartSolar services explicitly reported `socketcan_vecan0`.
+That makes `vecan1` the current battery2 CAN candidate, not a verified physical
+mapping. The sample contained no direct BMS-to-interface identity.
+
+The 148 identical `NoReply` path errors shown for the Anern inverter represented
+one failed bulk `GetItems` call, not 148 independent faults. The collector now
+reports that bulk failure once at device level. Generic `missing` fields are
+also expected where a service does not implement a path from the shared
+allowlist; invalid empty-array values are common Venus unavailable values.
+
 ## Start with a small capture
 
 Inside your own existing Cerbo terminal session, these commands read version,
@@ -72,6 +100,22 @@ This requests 60 observations at nominal five-second intervals, around five
 minutes. Slow reads stretch the interval. It stops after the requested count;
 Ctrl+C stops it early. The default is one observation; the accepted maximum
 is 120. There is no scheduler, auto-reconnect, service installation or listener.
+
+For the current CAN-first investigation, the revised collector has a compact
+mode that does not initialize D-Bus or inspect Bluetooth. After reviewing and
+placing this version of the script on Cerbo, run it in the foreground:
+
+```sh
+python3 cerbo_diagnostics.py --scope can --interface vecan1 --samples 60 --interval 5
+```
+
+This takes 60 finite passive samples over roughly five minutes. Each line keeps
+the current interface state and cumulative counters, plus within-session deltas,
+state changes and explicit counter-reset markers. It reads sysfs and runs only
+`ip -details -statistics link show dev vecan1`. It opens no CAN socket, sends no
+frame, and does not change bitrate, interface state or restart settings. If
+`vecan1` is missing or is not a CAN interface, the result is `unknown` with an
+explicit error rather than a healthy result.
 
 Output is one JSON object per line on stdout. Save the terminal output on your
 workstation as `captures/cerbo-fault.jsonl` (UTF-8); exclude prompts and shell

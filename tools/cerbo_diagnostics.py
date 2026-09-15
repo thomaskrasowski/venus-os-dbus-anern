@@ -65,6 +65,9 @@ PATHS = tuple(dict.fromkeys([
      for phase in (1, 2, 3) for field in ("Voltage", "Current", "Power")]))
 CAN_STATS = ("rx_packets", "tx_packets", "rx_bytes", "tx_bytes", "rx_errors",
              "tx_errors", "rx_dropped", "tx_dropped", "rx_over_errors")
+CAN_CONTROLLER_COUNTERS = ("restarted", "bus_errors", "arbitration_lost",
+                           "error_warning", "error_passive", "bus_off")
+INTERFACE_RE = re.compile(r"[A-Za-z0-9_.:-]{1,15}")
 MISSING_ERRORS = {"org.freedesktop.DBus.Error.UnknownObject",
                   "org.freedesktop.DBus.Error.UnknownMethod",
                   "org.freedesktop.DBus.Error.UnknownInterface"}
@@ -190,7 +193,10 @@ def read_device(bus, service, budget):
             device["values"].update(after)
         else:
             # A timeout is not evidence that a telemetry path is unsupported.
-            device["values"] = {p: field("error", error=name) for p in PATHS}
+            # GetItems is one bulk operation, so report its failure once rather
+            # than manufacturing one identical error for every requested path.
+            device["error"] = name
+            device["values"] = {}
     try:
         device["owner_consistent"] = owner == owner_of(bus, service, budget)
         device["owner_check_status"] = "ok" if device["owner_consistent"] else "changed"
@@ -246,15 +252,49 @@ def run_read_command(command, budget, limit=8192, runner=subprocess.run):
             "truncated": len(result.stdout) > limit}
 
 
-def read_can(budget, sysfs=Path("/sys/class/net"), runner=subprocess.run):
+def parse_can_detail(text):
+    """Extract stable SocketCAN controller fields from `ip -details` output."""
+    controller = {"status": "unknown", "counters": {}}
+    state = re.search(r"\bcan state ([A-Z-]+)", text)
+    if state:
+        controller["state"] = state.group(1)
+        controller["status"] = "ok"
+    berr = re.search(r"\(berr-counter\s+tx\s+(\d+)\s+rx\s+(\d+)\)", text)
+    if berr:
+        controller["berr_counter"] = {"tx": int(berr.group(1)),
+                                      "rx": int(berr.group(2))}
+    restart = re.search(r"\brestart-ms\s+(\d+)", text)
+    if restart:
+        controller["restart_ms"] = int(restart.group(1))
+    bitrate = re.search(r"\bbitrate\s+(\d+)", text)
+    if bitrate:
+        controller["bitrate"] = int(bitrate.group(1))
+    history = re.search(
+        r"re-started\s+bus-errors\s+arbit-lost\s+error-warn\s+error-pass\s+bus-off"
+        r"\s*\n\s*(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)", text)
+    if history:
+        controller["counters"] = dict(zip(
+            CAN_CONTROLLER_COUNTERS, (int(value) for value in history.groups())))
+    if controller["status"] == "unknown" and (berr or restart or bitrate or history):
+        controller["status"] = "partial"
+    return controller
+
+
+def read_can(budget, sysfs=Path("/sys/class/net"), runner=subprocess.run,
+             selected_interface=None, include_detail=True):
     result = {"status": "ok", "interfaces": [], "truncated": False}
+    if selected_interface is not None:
+        result["selected_interface"] = selected_interface
+        result["selected_interface_found"] = False
     try:
         candidates = list(islice(sysfs.iterdir(), 257))
         result["truncated"] = len(candidates) > 256
         ip = shutil.which("ip")
         for path in candidates[:256]:
             budget.timeout()
-            if not re.fullmatch(r"[A-Za-z0-9_.:-]{1,15}", path.name):
+            if not INTERFACE_RE.fullmatch(path.name):
+                continue
+            if selected_interface is not None and path.name != selected_interface:
                 continue
             try:
                 if read_small(path / "type") != "280":
@@ -264,6 +304,8 @@ def read_can(budget, sysfs=Path("/sys/class/net"), runner=subprocess.run):
                     break
                 interface = {"name": path.name, "stats": {}, "errors": []}
                 result["interfaces"].append(interface)
+                if selected_interface is not None:
+                    result["selected_interface_found"] = True
                 for name in CAN_STATS:
                     budget.timeout()
                     try:
@@ -280,8 +322,10 @@ def read_can(budget, sysfs=Path("/sys/class/net"), runner=subprocess.run):
                                                    "show", "dev", path.name], budget,
                                                   runner=runner)
                         if detail["status"] == "ok":
-                            interface["detail"] = detail["text"]
-                            interface["detail_truncated"] = detail["truncated"]
+                            interface["controller"] = parse_can_detail(detail["text"])
+                            if include_detail:
+                                interface["detail"] = detail["text"]
+                                interface["detail_truncated"] = detail["truncated"]
                         else:
                             interface["errors"].append(detail["error"])
                     except (OSError, subprocess.SubprocessError, BudgetExceeded) as exc:
@@ -296,7 +340,42 @@ def read_can(budget, sysfs=Path("/sys/class/net"), runner=subprocess.run):
     except Exception as exc:
         result["status"] = "error"
         result["error"] = error_name(exc)
+    if selected_interface is not None and not result["selected_interface_found"]:
+        result["status"] = "unknown"
+        result["error"] = "selected_interface_not_found_or_not_can"
     return result
+
+
+def add_can_deltas(current, previous):
+    """Add within-session counter deltas without treating resets as packet loss."""
+    prior_by_name = {item.get("name"): item for item in (previous or {}).get("interfaces", [])}
+    for interface in current.get("interfaces", []):
+        prior = prior_by_name.get(interface.get("name"))
+        delta = {"status": "baseline" if prior is None else "ok", "stats": {},
+                 "controller_counters": {}, "reset_detected": []}
+        interface["delta"] = delta
+        if prior is None:
+            continue
+        current_state = interface.get("controller", {}).get("state")
+        prior_state = prior.get("controller", {}).get("state")
+        if current_state != prior_state:
+            delta["state_change"] = {"previous": prior_state, "current": current_state}
+        for group, target in (("stats", "stats"),
+                              ("controller_counters", "controller")):
+            current_values = (interface.get("stats", {}) if target == "stats" else
+                              interface.get("controller", {}).get("counters", {}))
+            prior_values = (prior.get("stats", {}) if target == "stats" else
+                            prior.get("controller", {}).get("counters", {}))
+            for name, value in current_values.items():
+                old = prior_values.get(name)
+                if not isinstance(value, int) or not isinstance(old, int):
+                    continue
+                if value < old:
+                    delta["reset_detected"].append(group + "." + name)
+                    delta["status"] = "counter_reset"
+                else:
+                    delta[group][name] = value - old
+    return current
 
 
 def read_bluetooth(bus, names, discovery_success, budget):
@@ -389,6 +468,27 @@ def collect_sample(bus, session_id, started, clock=time.monotonic, can_reader=re
     return record
 
 
+def collect_can_sample(session_id, started, selected_interface, previous_can=None,
+                       clock=time.monotonic, can_reader=read_can,
+                       host_reader=read_host):
+    """Collect one compact, passive CAN-only sample without opening D-Bus."""
+    sample_started = clock()
+    budget = Budget(SAMPLE_BUDGET, clock)
+    can = can_reader(budget.child(10), selected_interface=selected_interface,
+                     include_detail=False)
+    add_can_deltas(can, previous_can)
+    record = {"schema_version": 1, "type": "sample", "scope": "can",
+              "source": "cerbo", "session_id": session_id,
+              "captured_at": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+              "elapsed_seconds": round(sample_started - started, 6),
+              "discovery_success": False, "discovery_truncated": False,
+              "devices": [], "errors": [], "can": can,
+              "bluetooth": {"status": "not_collected"},
+              "host": host_reader(budget.child(0.5))}
+    record["collection_duration_seconds"] = round(clock() - sample_started, 6)
+    return record
+
+
 def bounded_int(low, high):
     def parse(value):
         try:
@@ -401,8 +501,18 @@ def bounded_int(low, high):
     return parse
 
 
+def interface_name(value):
+    if not INTERFACE_RE.fullmatch(value):
+        raise argparse.ArgumentTypeError("expected a Linux interface name of 1..15 safe characters")
+    return value
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument("--scope", choices=("all", "can"), default="all",
+                        help="collect all diagnostics or compact CAN-only data (default: all)")
+    parser.add_argument("--interface", type=interface_name,
+                        help="CAN interface for --scope can, for example vecan1")
     parser.add_argument("--samples", type=bounded_int(1, 120), default=1,
                         help="finite sample count, 1..120 (default: 1)")
     parser.add_argument("--interval", type=bounded_int(2, 60), default=5,
@@ -410,24 +520,38 @@ def main(argv=None):
     parser.add_argument("--logs", action="store_true",
                         help="include at most 16 KiB of private kernel log text in the first sample")
     args = parser.parse_args(argv)
-    try:
-        import dbus  # Venus dependency; --help and imports/tests work offline.
-        # Force a local Unix system bus; never honor a remote D-Bus address.
-        socket_path = "/run/dbus/system_bus_socket"
-        if not Path(socket_path).exists():
-            socket_path = "/var/run/dbus/system_bus_socket"
-        bus = dbus.bus.BusConnection("unix:path=" + socket_path)
-    except Exception as exc:
-        print(json.dumps({"schema_version": 1, "type": "error", "source": "cerbo",
-                          "error": "local_system_bus_unavailable", "detail": error_name(exc)}))
-        return 1
+    if args.scope == "can" and not args.interface:
+        parser.error("--interface is required with --scope can")
+    if args.scope == "all" and args.interface:
+        parser.error("--interface requires --scope can")
+    if args.scope == "can" and args.logs:
+        parser.error("--logs is unavailable with --scope can")
+    bus = None
+    if args.scope == "all":
+        try:
+            import dbus  # Venus dependency; --help and CAN-only mode work offline.
+            # Force a local Unix system bus; never honor a remote D-Bus address.
+            socket_path = "/run/dbus/system_bus_socket"
+            if not Path(socket_path).exists():
+                socket_path = "/var/run/dbus/system_bus_socket"
+            bus = dbus.bus.BusConnection("unix:path=" + socket_path)
+        except Exception as exc:
+            print(json.dumps({"schema_version": 1, "type": "error", "source": "cerbo",
+                              "error": "local_system_bus_unavailable", "detail": error_name(exc)}))
+            return 1
     started = time.monotonic()
     session_id = str(uuid.uuid4())
+    previous_can = None
     try:
         for index in range(args.samples):
             tick = time.monotonic()
-            record = collect_sample(bus, session_id, started,
-                                    include_logs=args.logs and index == 0)
+            if args.scope == "can":
+                record = collect_can_sample(session_id, started, args.interface,
+                                            previous_can=previous_can)
+                previous_can = record["can"]
+            else:
+                record = collect_sample(bus, session_id, started,
+                                        include_logs=args.logs and index == 0)
             print(json.dumps(record, allow_nan=False, separators=(",", ":")), flush=True)
             if index + 1 < args.samples:
                 time.sleep(max(0, args.interval - (time.monotonic() - tick)))
@@ -436,7 +560,8 @@ def main(argv=None):
     except BrokenPipeError:
         return 1
     finally:
-        bus.close()
+        if bus is not None:
+            bus.close()
     return 0
 
 
