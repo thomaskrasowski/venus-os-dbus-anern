@@ -180,6 +180,20 @@ class ObservationTests(unittest.TestCase):
         self.assertIn("invalid_nonfinite", report["observer"][0]["host"]["load_average"][0])
         self.assertIsInstance(sample["host"]["load_average"][0], float)
 
+    def test_can_only_sample_is_labelled_and_controller_details_are_preserved(self):
+        sample = record(devices=[], scope="can", discovery_success=False,
+            bluetooth={"status": "not_collected"}, can={"status": "ok", "interfaces": [{
+                "name": "vecan1", "stats": {"tx_dropped": 71},
+                "controller": {"state": "ERROR-PASSIVE", "bitrate": 500000,
+                    "counters": {"bus_off": 19}},
+                "delta": {"status": "baseline", "stats": {},
+                    "controller_counters": {}, "reset_detected": []}}]})
+        report = diagnostics.analyze([sample])
+        self.assertEqual(report["observer"][0]["scope"], "can")
+        interface = report["transport"]["can"][0]["snapshot"]["interfaces"][0]
+        self.assertEqual(interface["controller"]["state"], "ERROR-PASSIVE")
+        self.assertEqual(interface["controller"]["counters"]["bus_off"], 19)
+
 
 class ContinuityTests(unittest.TestCase):
     def test_index_stalls_gap_numbers_and_resumes_on_change(self):
