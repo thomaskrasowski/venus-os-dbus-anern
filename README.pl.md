@@ -20,14 +20,16 @@ instalację, ustawienia i pomiary. Pełne ostrzeżenie: [SAFETY.md](SAFETY.md).
 - Usunęliśmy eksperymentalną usługę Solar Charger po problemach z DVCC/SystemCalc.
 - Użytkownik wymienił adapter USB i potwierdził działanie.
 - Zaimportowaliśmy lokalny plik dbus-anern.running.py; zapisaliśmy jego SHA-256.
-  Zgodność z aktualnym plikiem na Cerbo wymaga świeżego porównania.
+  15 września 2026 właściciel porównał go z plikiem działającym na Cerbo;
+  `diff` nie wykazał różnic.
 
 ## Czego jeszcze brakuje
 
 Sterownik ma napięcie i częstotliwość wejścia AC, ale nie zweryfikowaną moc,
 prąd ani energię Grid. Nie obliczamy fikcyjnej mocy sieci z innych pomiarów.
-Główny kafel PV w VRM, topologia AC i identyfikacja nowego adaptera pozostają
-otwarte. Główne szczegóły techniczne utrzymujemy w dokumentacji angielskiej.
+Główny kafel PV w VRM i topologia AC pozostają otwarte. Nowy adapter ma
+identyfikator `BG041YD3`, lecz obecny sterownik używa fallbacku `/dev/ttyUSB0`.
+Główne szczegóły techniczne utrzymujemy w dokumentacji angielskiej.
 
 ## Pliki działającej instalacji
 
@@ -42,6 +44,7 @@ Przed instalacją trzeba go zweryfikować; samo działanie nowego adaptera
 nie potwierdza stabilnego przypisania przez /dev/serial/by-id/.
 
 [Publikacja na GitHub krok po kroku](docs/PUBLISH.pl.md).
+[Podłączenie invertera — dokumentacja angielska](docs/INVERTER-CONNECTION.md).
 [MIT](LICENSE) pozwala używać, zmieniać i rozpowszechniać kod z zachowaniem
 noty copyright i licencji, również komercyjnie. Nie wymaga publikowania zmian.
 Zastrzeżenie odpowiedzialności obowiązuje tylko w zakresie dopuszczonym prawem.
@@ -49,6 +52,6 @@ Nazwy produktów należą do ich właścicieli i służą opisowi kompatybilnoś
 
 ## Wykresy Grid
 
-Dodaliśmy sondę D-Bus przez SSH, exporter Prometheus i dashboard Grafana
-obejmujące V/Hz wejścia oraz świeżość danych. [Instrukcja i VRM](docs/GRID.md).
+[Diagnostyka VRM](docs/GRID.md) opisuje, dlaczego obecne dane nie tworzą
+pomiaru Grid W/A/kWh. [Grafana](docs/GRAFANA.md) ma teraz osobny dokument.
 Wdrożenie na serwerach, rzeczywiste wykresy i naprawa VRM są jeszcze do wykonania.

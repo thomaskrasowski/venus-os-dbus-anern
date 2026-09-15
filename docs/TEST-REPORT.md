@@ -108,3 +108,16 @@ The owner supplied a completed 2.45-second snapshot; it exposed a false
 truncation flag on complete sysfs counter values. The flag is corrected locally.
 No assistant Cerbo access, service action, settings change or deployment took
 place. The new correction has not been tested on hardware.
+
+## 2026-09-15 — documentation and live-evidence update
+
+The owner supplied results from an interactive Cerbo session. The installed
+driver compiled and had no diff from the GitHub candidate. The owner also
+confirmed adapter `BG041YD3`, `/Connected = 1`, AC-input V/Hz, unavailable
+system Grid-power paths and active-input source 240.
+
+Repository changes in this update are documentation only. The full offline suite
+passed all 127 tests with the bundled Python interpreter, all 98 local Markdown
+links resolved, and `git diff --check` passed. No driver, tool, service script or
+monitoring definition changed. The assistant did not connect to the Cerbo,
+restart a service, deploy code or run a hardware test.

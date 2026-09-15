@@ -57,6 +57,12 @@ before claiming an accurate generic PI30 implementation.
 
 The demonstrated response has AC input voltage/frequency, not a validated input power measurement.
 Do not derive grid power by subtracting asynchronous PV/load/BMS readings and call it measured.
+QPIGS does provide measured AC output active and apparent power, already
+published as `/Ac/Out/L1/P` and `/Ac/Out/L1/S`. These describe power delivered
+at the inverter output and cannot be renamed as utility import.
+
+On the confirmed Venus OS v3.79 system, `/Ac/Grid/L1/Power` was unavailable and
+`/Ac/ActiveIn/Source` was 240. See [VRM Grid troubleshooting](GRID.md).
 
 ## PV tile / accounting
 

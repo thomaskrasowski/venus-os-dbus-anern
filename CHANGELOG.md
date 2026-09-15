@@ -1,5 +1,19 @@
 # Changelog
 
+## 2026-09-15 — live evidence and documentation split
+
+- Recorded the owner-run comparison showing that the installed driver matches
+  the GitHub source, plus Venus OS v3.79 and the live D-Bus Grid results.
+- Recorded the replacement adapter identity `BG041YD3` and confirmed that the
+  existing source currently reaches it through the ttyUSB0 fallback.
+- Added a dedicated inverter connection guide.
+- Kept VRM Grid diagnosis in `docs/GRID.md` and moved Prometheus/Grafana setup
+  to `docs/GRAFANA.md` for later work.
+- Confirmed that QPIGS output W/VA cannot be used as grid-input power and made
+  no driver change that would fabricate a Grid source.
+- No Cerbo connection, deployment, restart or settings change was performed by
+  this repository update.
+
 ## 2026-09-14 — relocation, English documentation and owner access rules
 
 - Moved the complete local checkout/Git history to the cerbo project directory.
