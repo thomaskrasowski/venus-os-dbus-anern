@@ -57,3 +57,12 @@ The generated native Grafana definition was published to Minizon Grafana on
 back at version 1. This authorized Grafana API write did not access Cerbo.
 Minizon Prometheus had no matching power-monitor/Cerbo/JK/Anern series, so the
 live dashboard contains no real readings yet.
+
+## CAN diagnostic follow-up — 2026-09-15
+
+The owner supplied one local collector output that caught battery D-Bus absence
+and an `ERROR-PASSIVE` `vecan1` interface with cumulative bus-off history. No
+private raw capture is committed. The collector gained a compact, bounded,
+passive CAN-only scope and structured controller-counter deltas; it still sends
+no CAN frames and changes no target state. The production driver and service
+files remain unchanged. No assistant connection to Cerbo or deployment occurred.

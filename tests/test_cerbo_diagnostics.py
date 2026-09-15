@@ -115,7 +115,8 @@ class CollectorTests(unittest.TestCase):
         bus = FakeBus()
         bus.bulk_error = DBusError("NoReply")
         result = self.read(bus)
-        self.assertEqual(result["values"]["/Soc"]["status"], "error")
+        self.assertEqual(result["error"], "org.freedesktop.DBus.Error.NoReply")
+        self.assertEqual(result["values"], {})
         self.assertNotIn("GetValue", [c[3] for c in bus.calls])
 
     def test_legacy_fallback_coherence_and_missing_paths(self):
@@ -263,6 +264,101 @@ class CollectorTests(unittest.TestCase):
         self.assertEqual(result["interfaces"][0]["stats"]["rx_errors"], 7)
         self.assertEqual(calls, [["/sbin/ip", "-details", "-statistics", "link", "show", "dev", "can0"]])
 
+    def test_can_detail_parser_maps_controller_history_in_header_order(self):
+        detail = """2: vecan1: <NOARP,UP> mtu 16 state UNKNOWN
+    link/can
+    can state ERROR-PASSIVE (berr-counter tx 0 rx 0) restart-ms 100
+      bitrate 500000 sample-point 0.875
+      re-started bus-errors arbit-lost error-warn error-pass bus-off
+      19 0 0 52 67 19
+"""
+        result = diagnostics.parse_can_detail(detail)
+        self.assertEqual(result["state"], "ERROR-PASSIVE")
+        self.assertEqual(result["berr_counter"], {"tx": 0, "rx": 0})
+        self.assertEqual(result["restart_ms"], 100)
+        self.assertEqual(result["bitrate"], 500000)
+        self.assertEqual(result["counters"], {
+            "restarted": 19, "bus_errors": 0, "arbitration_lost": 0,
+            "error_warning": 52, "error_passive": 67, "bus_off": 19})
+
+    def test_can_filter_is_compact_and_missing_target_is_unknown(self):
+        detail = ("can state ERROR-ACTIVE (berr-counter tx 0 rx 0) restart-ms 100\n"
+                  "re-started bus-errors arbit-lost error-warn error-pass bus-off\n"
+                  "1 2 3 4 5 6\n")
+        calls = []
+        def runner(command, **kwargs):
+            calls.append(command)
+            return subprocess.CompletedProcess(command, 0, detail, "")
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for name in ("vecan0", "vecan1"):
+                (root / name / "statistics").mkdir(parents=True)
+                (root / name / "type").write_text("280")
+                (root / name / "operstate").write_text("up")
+                for stat in diagnostics.CAN_STATS:
+                    (root / name / "statistics" / stat).write_text("7")
+            with patch.object(diagnostics.shutil, "which", return_value="/sbin/ip"):
+                result = diagnostics.read_can(diagnostics.Budget(5), root, runner,
+                    selected_interface="vecan1", include_detail=False)
+                missing = diagnostics.read_can(diagnostics.Budget(5), root, runner,
+                    selected_interface="can9", include_detail=False)
+        self.assertTrue(result["selected_interface_found"])
+        self.assertEqual([item["name"] for item in result["interfaces"]], ["vecan1"])
+        self.assertNotIn("detail", result["interfaces"][0])
+        self.assertEqual(result["interfaces"][0]["controller"]["state"], "ERROR-ACTIVE")
+        self.assertEqual(len(calls), 1)
+        self.assertEqual(missing["status"], "unknown")
+        self.assertEqual(missing["error"], "selected_interface_not_found_or_not_can")
+
+    def test_can_deltas_report_growth_state_change_and_counter_reset(self):
+        previous = {"interfaces": [{"name": "vecan1",
+            "stats": {"rx_packets": 100, "tx_dropped": 70},
+            "controller": {"state": "ERROR-ACTIVE",
+                           "counters": {"bus_off": 19, "error_passive": 67}}}]}
+        current = {"interfaces": [{"name": "vecan1",
+            "stats": {"rx_packets": 130, "tx_dropped": 2},
+            "controller": {"state": "ERROR-PASSIVE",
+                           "counters": {"bus_off": 20, "error_passive": 70}}}]}
+        diagnostics.add_can_deltas(current, previous)
+        delta = current["interfaces"][0]["delta"]
+        self.assertEqual(delta["stats"]["rx_packets"], 30)
+        self.assertEqual(delta["controller_counters"], {"bus_off": 1, "error_passive": 3})
+        self.assertEqual(delta["state_change"], {
+            "previous": "ERROR-ACTIVE", "current": "ERROR-PASSIVE"})
+        self.assertEqual(delta["status"], "counter_reset")
+        self.assertEqual(delta["reset_detected"], ["stats.tx_dropped"])
+
+    def test_can_only_collection_skips_dbus_and_raw_ip_text(self):
+        calls = []
+        def can_reader(budget, selected_interface, include_detail):
+            calls.append((selected_interface, include_detail))
+            return {"status": "ok", "interfaces": [{"name": selected_interface,
+                "stats": {}, "controller": {"state": "ERROR-ACTIVE", "counters": {}}}]}
+        result = diagnostics.collect_can_sample("session", 0, "vecan1",
+            can_reader=can_reader, host_reader=lambda budget: {"status": "ok"})
+        self.assertEqual(calls, [("vecan1", False)])
+        self.assertEqual(result["scope"], "can")
+        self.assertFalse(result["discovery_success"])
+        self.assertEqual(result["devices"], [])
+        self.assertEqual(result["bluetooth"]["status"], "not_collected")
+        self.assertEqual(result["can"]["interfaces"][0]["delta"]["status"], "baseline")
+
+    def test_can_only_cli_does_not_import_or_open_dbus(self):
+        records = []
+        def collector(session_id, started, selected_interface, previous_can=None):
+            record = {"can": {"status": "ok", "interfaces": []},
+                      "selected": selected_interface, "previous": previous_can}
+            records.append(record)
+            return record
+        with patch.object(diagnostics, "collect_can_sample", side_effect=collector), \
+             patch("sys.stdout", new_callable=io.StringIO) as output, \
+             patch.dict(sys.modules, {"dbus": None}):
+            code = diagnostics.main(["--scope", "can", "--interface", "vecan1",
+                                     "--samples", "1"])
+        self.assertEqual(code, 0)
+        self.assertEqual(records[0]["selected"], "vecan1")
+        self.assertEqual(json.loads(output.getvalue())["selected"], "vecan1")
+
     def test_optional_logs_are_bounded_and_command_failure_explicit(self):
         def runner(command, **kwargs):
             return subprocess.CompletedProcess(command, 0, "x" * 20000, "")
@@ -276,6 +372,13 @@ class CollectorTests(unittest.TestCase):
                 diagnostics.main(["--help"])
             self.assertEqual(outcome.exception.code, 0)
         for args in (["--samples", "0"], ["--samples", "121"], ["--interval", "1"], ["--interval", "61"]):
+            with patch("sys.stderr", new_callable=io.StringIO), self.assertRaises(SystemExit) as outcome:
+                diagnostics.main(args)
+            self.assertEqual(outcome.exception.code, 2)
+        for args in (["--scope", "can"],
+                     ["--interface", "vecan1"],
+                     ["--scope", "can", "--interface", "../../bad"],
+                     ["--scope", "can", "--interface", "vecan1", "--logs"]):
             with patch("sys.stderr", new_callable=io.StringIO), self.assertRaises(SystemExit) as outcome:
                 diagnostics.main(args)
             self.assertEqual(outcome.exception.code, 2)

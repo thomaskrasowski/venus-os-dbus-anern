@@ -64,3 +64,18 @@ had no matching live power-monitor/Cerbo/JK/Anern series, so no live values or
 panel behavior were hardware-validated. Grafana's optional image-render endpoint
 reported that the renderer plugin is not installed; API read-back verification
 did not depend on it.
+
+## 2026-09-15 — CAN diagnostic follow-up
+
+The full offline suite now has 99 passing tests, including 25 collector tests.
+New cases verify the
+exact SocketCAN controller-counter header mapping, compact selected-interface
+output, explicit unknown status for a missing interface, counter deltas/resets,
+state transitions, CAN-only report compatibility, and CLI operation without
+importing D-Bus. The bulk
+`GetItems` timeout test verifies one device-level error instead of duplicated
+per-path errors. Python compilation and `git diff --check` passed.
+
+The owner-supplied sample was analyzed locally; its raw text was not added to
+the repository. No Cerbo connection, CAN socket, live hardware test, deployment,
+setting change, service restart or continuous process occurred.

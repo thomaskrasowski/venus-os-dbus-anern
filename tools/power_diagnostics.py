@@ -343,6 +343,7 @@ def analyze(records, mapping=None, stale_after=35):
                        "Sample interval exceeded the freshness threshold. Chart lines break across this unobserved period.")
         last_key, last_elapsed, last_at = key, elapsed, at
         observer = {"at": at, "elapsed": elapsed, "session_id": record["session_id"], "segment": segment,
+                    "scope": record.get("scope", "all"),
                     "collection_duration_seconds": record.get("collection_duration_seconds"),
                     "discovery_success": record["discovery_success"],
                     "discovery_truncated": record["discovery_truncated"],
