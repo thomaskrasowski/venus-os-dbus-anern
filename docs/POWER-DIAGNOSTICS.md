@@ -9,23 +9,39 @@ Cerbo connection.
 
 ## Current installation report
 
-The owner reports JK-BMS on both batteries, battery2 connected through CAN,
-and battery1 Bluetooth handled by Cerbo GX. Battery2 intermittently loses SOC
-while voltage/current remain visible; battery1 loses Bluetooth connection.
-The owner also mentioned a larger "600Amps" model. Exact model, firmware,
-capacity, driver version, service identities and CAN interface remain unverified.
-That description is not interpreted as a confirmed 600 Ah capacity.
+The owner's 2026-09-15 correction is recorded in [TOPOLOGY.md](TOPOLOGY.md):
 
-Keep battery1/inverter1 separate from battery2/inverter2. A selected system
-battery source is not an aggregate of these banks.
+- Installation1 / Grid Phase1: battery1/inverter1. JK-BMS Bluetooth uses the
+  pre-existing `dbus-serialbattery` / `Jkbms_Ble` integration on Cerbo.
+  Its public service placeholder is `com.victronenergy.battery.ble_<device-address>`.
+- Installation2 / Grid Phase2: battery2a + battery2b in parallel on the DC side,
+  with inverter2. The JK master/slave link uses RS485-2. Battery2a is the CAN
+  master on `vecan1`, service `com.victronenergy.battery.socketcan_vecan1`, and
+  battery2b is the slave.
+
+Exact BMS models/firmware, current capacities and pack-versus-bank meanings of
+CAN fields are unverified. "600Amps" does not establish 600 Ah. Keep the
+installations separate. A selected system battery
+source is not an aggregate of both installations; current DVCC selection is
+still pending verification. Earlier owner context associates the two real
+SmartSolars with installation2; their supplied service paths name `vecan0`.
+
+The owner confirms no Cerbo runtime configuration changes or deployment since
+starting local Codex/repository work. BLE predates that work. The historical
+Grafana-only scaffold import did not implement Cerbo collection or Grafana data
+integration, and no continuous collector is deployed by this repository work.
+The owner reports that CAN and battery1 BLE were implemented together and their
+dropouts began together. There is no pre-BLE CAN-only baseline. This supports
+time-correlated investigation but does not prove that BLE caused the CAN fault.
 
 ## First owner-supplied fault capture — 2026-09-15
 
 The supplied one-sample JSON capture caught the battery service absent from
 D-Bus. System battery service, selected battery service and SOC were invalid,
 while system voltage/current remained present. The system voltage source named
-`com.victronenergy.inverter.anern2`, so those V/A values were fallback inverter
-measurements. This sample does not show a battery service delivering V/A while
+`com.victronenergy.inverter.anern2`, establishing inverter fallback for voltage.
+The source of the still-visible current was not established. This sample does
+not show a battery service delivering V/A while
 omitting only SOC.
 
 `vecan1` was in `ERROR-PASSIVE` at capture time. Its cumulative controller
@@ -38,14 +54,60 @@ between observations matter more than these totals alone.
 
 `vecan0` was `ERROR-ACTIVE`, with zero recorded restart/error/bus-off history,
 and both detected SmartSolar services explicitly reported `socketcan_vecan0`.
-That makes `vecan1` the current battery2 CAN candidate, not a verified physical
-mapping. The sample contained no direct BMS-to-interface identity.
+The first sample contained no direct BMS-to-interface identity. The later owner
+clarification and native CAN service logs identify `vecan1` as the installation2
+JK master connection; the parallel bank's individual field semantics remain open.
 
 The 148 identical `NoReply` path errors shown for the Anern inverter represented
 one failed bulk `GetItems` call, not 148 independent faults. The collector now
 reports that bulk failure once at device level. Generic `missing` fields are
 also expected where a service does not implement a path from the shared
 allowlist; invalid empty-array values are common Venus unavailable values.
+
+Later supplied logs identify kernel `6.12.90-venus-4` and `can-bus-bms` v0.71.
+The native driver timed out and disconnected its D-Bus battery service near
+2026-09-15 08:36:24. The IRQ event is estimated near 08:36:18 by converting
+kernel time using the supplied clock anchor. That estimate does not prove an
+exact six-second causal sequence. Later `ERROR-PASSIVE` state and frozen counters
+do not reveal the exact instant traffic stopped.
+
+The supplied package list includes `vesmart-server` `0.5.14-r0`, but the process and
+`/service` listings did not show it running. `bluetoothd` was running. The likely
+`dbus-blebattery.0` association needs its run configuration and status. These
+observations do not establish a Bluetooth/CAN cause.
+
+## Owner-run configuration snapshot
+
+[cerbo_config_snapshot.py](../tools/cerbo_config_snapshot.py) prepares a single,
+bounded, foreground snapshot of selected configuration and current state. After
+the owner reviews and chooses to place it in their Cerbo tools directory, the
+owner can run:
+
+```sh
+python3 cerbo_config_snapshot.py > /tmp/cerbo-config-before.json
+```
+
+The shell redirection writes only the JSON report file. The script reads local
+evidence and writes stdout; it does not change configuration, start or restart
+services, scan/pair/connect Bluetooth, send CAN frames, or contact another host.
+No assistant has executed this command on Cerbo.
+
+The snapshot includes bounded host/version/proc evidence; CAN sysfs statistics,
+driver bindings and `ip` detail; selected service paths, run/log-run files,
+`svstat` and existing log tails; allowlisted `dbus-serialbattery` configuration
+keys; relevant installed packages and running processes; and kernel IRQ/SPI/CAN/BLE context. When
+local D-Bus is available it reads selected battery/system/DVCC source paths and
+individually allowlisted settings paths. It does not export full configuration or environment
+files. It uses an approximately 30-second operation budget with explicit errors
+and truncation; OS scheduling is outside a strict completion guarantee. The
+D-Bus phase runs in the script's own short-lived child process, with a parent
+timeout covering import, bus connection and reads. A stalled D-Bus connection
+therefore returns unknown evidence without holding up the other report sections.
+
+Keep this report private in ignored `captures/` after owner-operated transfer.
+It retains service identifiers, device addresses, paths and log messages, even
+though common credential lines are redacted. Review before sharing. This is
+evidence collection, not an installation or configuration change.
 
 ## Start with a small capture
 
@@ -171,7 +233,7 @@ The demo is conspicuously labelled synthetic. The HTML template in
 `monitoring/power-dashboard.html` must first be rendered by the report tool.
 
 Copy [power-mapping.example.json](../monitoring/power-mapping.example.json) into
-the ignored `captures/` directory. Replace the two placeholder service names
+the ignored `captures/` directory. Replace the placeholder service names
 with exact identities after verifying which physical battery each represents:
 
 ```powershell

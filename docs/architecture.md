@@ -1,6 +1,16 @@
 # Architecture and telemetry
 
-## Source-derived working arrangement
+## Owner-confirmed installation arrangement
+
+See [TOPOLOGY.md](TOPOLOGY.md) for the 2026-09-15 correction. Installation1
+(Grid Phase1) has battery1/inverter1 and an existing JK-BMS Bluetooth connection
+through `dbus-serialbattery` / `Jkbms_Ble`. Installation2 (Grid Phase2) has
+battery2a and battery2b in parallel on the DC side with inverter2. Their JK BMSs
+use an RS485-2 master/slave link: battery2a is the master sending CAN to Cerbo
+`vecan1`, and battery2b is the slave. The aggregation semantics of the master's
+fields remain unverified.
+
+## Existing inverter2 monitoring bridge
 
 ```text
 inverter2 RS232 -> USB serial adapter -> one Python process
@@ -9,10 +19,14 @@ inverter2 RS232 -> USB serial adapter -> one Python process
                                             |
                                 Venus consumers / VRM
 
-native JK CAN bat2a -> native CAN battery service -> Victron DVCC
-                                                   |
-                                         two real SmartSolars
+installation2 JK master -> CAN vecan1 -> native CAN battery service
+installation2 SmartSolars -> CAN vecan0 -> native solar-charger services
 ```
+
+The SmartSolar installation association comes from earlier owner context;
+`socketcan_vecan0` is reported by the supplied service evidence. Active DVCC
+battery selection and control relationships still require verification. The
+diagram does not assert that the CAN master currently controls the chargers.
 
 The bridge queries QID and QMN at startup, QPIGS on a nominal 5-second timer and QMOD periodically.
 It validates received CRC and retries up to three times, including explicit NAK responses.

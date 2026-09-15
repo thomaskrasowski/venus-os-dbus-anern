@@ -66,3 +66,36 @@ private raw capture is committed. The collector gained a compact, bounded,
 passive CAN-only scope and structured controller-counter deltas; it still sends
 no CAN frames and changes no target state. The production driver and service
 files remain unchanged. No assistant connection to Cerbo or deployment occurred.
+
+## Owner topology clarification and configuration snapshot — 2026-09-15
+
+[TOPOLOGY.md](TOPOLOGY.md) records the owner's corrected physical mapping:
+installation1 / Grid Phase1 uses battery1/inverter1 and a pre-existing
+`dbus-serialbattery` / `Jkbms_Ble` integration. Installation2 / Grid Phase2 uses
+battery2a + battery2b in parallel, JK master/slave communication over RS485-2,
+and battery2a master CAN to Cerbo `vecan1`, with battery2b as slave. Aggregate
+field semantics, current capacity and active DVCC source are not verified. Public documentation
+uses a placeholder for the exact BLE service address; private captures retain it.
+
+The owner confirms no Cerbo runtime configuration changes or deployment since
+starting this local Codex/repository work. Owner-run diagnostic captures are
+evidence, not a deployed monitoring integration. The historical Grafana-only
+scaffold import above is unchanged; live Cerbo/Grafana data integration and
+continuous collection are not implemented.
+The owner reports that CAN and battery1 BLE were introduced together and the
+dropouts began together; there is no pre-BLE CAN-only baseline. This does not
+establish Bluetooth as the cause.
+
+New `tools/cerbo_config_snapshot.py` is local preparation for an owner-run
+configuration snapshot. It reads bounded, selected service/configuration,
+package, host, transport and D-Bus evidence and writes JSON to stdout. It has
+not been executed on Cerbo by the assistant. Its output is private and must not
+be committed. See [POWER-DIAGNOSTICS.md](POWER-DIAGNOSTICS.md) for the command.
+
+Supplied logs identify kernel `6.12.90-venus-4` and `can-bus-bms` v0.71. The
+September 15 timeout near 08:36:24 follows a kernel IRQ event estimated near
+08:36:18 from a clock conversion; that is not exact verified time alignment.
+Later terminal `ERROR-PASSIVE` state and frozen counters do not date the exact
+traffic stop. `vesmart-server` `0.5.14-r0` is installed but was absent from the supplied
+process and service listings; `bluetoothd` was running. No hardware fix, current
+firmware identity for the BMS, or Bluetooth/CAN cause has been established.

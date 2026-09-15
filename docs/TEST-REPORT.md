@@ -79,3 +79,22 @@ per-path errors. Python compilation and `git diff --check` passed.
 The owner-supplied sample was analyzed locally; its raw text was not added to
 the repository. No Cerbo connection, CAN socket, live hardware test, deployment,
 setting change, service restart or continuous process occurred.
+
+## 2026-09-15 — topology and configuration snapshot
+
+The full offline suite passed all 124 tests with the bundled Python interpreter,
+including 25 new configuration-snapshot tests. These verify fixed read-only
+command and D-Bus scope, individually allowlisted settings, private configuration
+filtering, bounded file/subprocess output, command and D-Bus worker timeouts,
+owned-child cleanup on interruption, and explicit incomplete/unknown evidence.
+The hung-worker test exercises the parent's deadline without a live D-Bus daemon.
+
+All 45 local Markdown links checked across the updated documentation resolved.
+The example mapping JSON parsed successfully; the exact BLE identifier remains
+in ignored private mapping data. Public changes were checked for the owner's
+BLE address and raw logs. `git diff --check` passed.
+
+The production driver, existing collectors, service scripts and Grafana
+definitions are unchanged. No Cerbo connection, live CAN/Bluetooth/D-Bus test,
+setting change, restart or deployment occurred. The owner must review and run
+the snapshot to establish target compatibility and provide current evidence.

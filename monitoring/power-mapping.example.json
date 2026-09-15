@@ -1,17 +1,17 @@
 {
   "devices": {
     "com.victronenergy.battery.REPLACE_WITH_EXACT_BATTERY1_SERVICE": {
-      "label": "Battery 1 - JK-BMS",
+      "label": "Installation 1 / Phase 1 - battery1 JK-BMS",
       "bank": "battery1",
       "transport": "bluetooth"
     },
-    "com.victronenergy.battery.REPLACE_WITH_EXACT_BATTERY2_SERVICE": {
-      "label": "Battery 2 - JK-BMS",
+    "com.victronenergy.battery.socketcan_vecan1": {
+      "label": "Installation 2 / Phase 2 - battery2a master CAN (2a + 2b bank)",
       "bank": "battery2",
       "transport": "can"
     },
     "com.victronenergy.inverter.anern2": {
-      "label": "Inverter 2",
+      "label": "Installation 2 / Phase 2 - inverter2",
       "bank": "battery2",
       "transport": "serial"
     }
