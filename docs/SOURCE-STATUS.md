@@ -2,6 +2,11 @@
 
 Prepared on 2026-09-11. No live deployment was performed.
 
+Latest owner-supplied configuration evidence (2026-09-15 20:55:51 UTC):
+[CAN/BLE snapshot findings](CAN-BLE-SNAPSHOT-2026-09-15.md). The owner ran the
+snapshot successfully; the assistant analyzed its local output without a Cerbo
+connection. This does not establish healthy telemetry or a deployed fix.
+
 | Item | Provenance and status |
 |---|---|
 | src/dbus-anern.py | Copied byte-for-byte from the owner's local file named dbus-anern.running.py |

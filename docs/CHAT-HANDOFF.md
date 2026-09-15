@@ -2,6 +2,11 @@
 
 This is a curated handover, **not a complete chat export**. Read `SOURCE-STATUS.md` before editing.
 
+Latest investigation: [2026-09-15 CAN/BLE snapshot findings](CAN-BLE-SNAPSHOT-2026-09-15.md).
+The configured battery/BMS target is CAN instance 512; both battery services
+were absent. Exact-version kernel source explains how the observed IRQ error
+can disable CAN interrupts. The original trigger remains unresolved.
+
 ## Objective
 
 Maintain a read-only PI30 -> Venus D-Bus bridge for a 6200 W third-party inverter on a Cerbo GX MK2.

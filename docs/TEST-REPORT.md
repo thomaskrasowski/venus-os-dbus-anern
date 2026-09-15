@@ -98,3 +98,13 @@ The production driver, existing collectors, service scripts and Grafana
 definitions are unchanged. No Cerbo connection, live CAN/Bluetooth/D-Bus test,
 setting change, restart or deployment occurred. The owner must review and run
 the snapshot to establish target compatibility and provide current evidence.
+
+## 2026-09-15 — supplied snapshot analysis and sysfs correction
+
+All 127 offline tests passed, including three new cases for nominal sysfs size
+versus actual content, genuine head/tail truncation, and the global byte limit.
+Updated local documentation links resolve and `git diff --check` passed.
+The owner supplied a completed 2.45-second snapshot; it exposed a false
+truncation flag on complete sysfs counter values. The flag is corrected locally.
+No assistant Cerbo access, service action, settings change or deployment took
+place. The new correction has not been tested on hardware.

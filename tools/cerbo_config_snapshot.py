@@ -134,13 +134,23 @@ class Reader:
             info = path.stat()
             if not stat.S_ISREG(info.st_mode):
                 raise ValueError("only regular/proc/sysfs files may be read")
-            limit = min(limit, MAX_FILE_BYTES - self.bytes)
+            remaining = MAX_FILE_BYTES - self.bytes
+            limit = min(limit, remaining)
+            read_size = min(limit + 1, remaining)
+            skipped = False
             with path.open("rb") as stream:
                 if tail and info.st_size > limit:
-                    stream.seek(-limit, os.SEEK_END)
-                raw = stream.read(min(limit + 1, MAX_FILE_BYTES - self.bytes))
+                    skipped = stream.seek(-limit, os.SEEK_END) > 0
+                raw = stream.read(read_size)
             self.bytes += len(raw)
-            result["truncated"] = len(raw) > limit or info.st_size > limit or (info.st_size == 0 and len(raw) >= limit)
+            # sysfs commonly advertises a page-sized st_size for tiny values.
+            # Head truncation depends on an actual extra byte, not that metadata.
+            boundary = read_size <= limit and len(raw) == read_size
+            result["truncated"] = skipped or len(raw) > limit or boundary
+            if boundary:
+                # The global cap prevented the extra-byte EOF check. Preserve
+                # uncertainty even if the file might end exactly at this point.
+                result["byte_budget_boundary_reached"] = True
             raw = raw[-limit:] if tail else raw[:limit]
             text = raw.decode("utf-8", "replace")
             result.update(status="ok", text=redact(text) if sanitize else text,

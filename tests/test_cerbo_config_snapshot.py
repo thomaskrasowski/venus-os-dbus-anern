@@ -8,6 +8,7 @@ import subprocess
 import sys
 import tempfile
 import time
+from types import SimpleNamespace
 import unittest
 from unittest.mock import patch
 
@@ -96,6 +97,43 @@ MAX_BATTERY_CHARGE_CURRENT = 100
             result = self.make_reader(root).read("/run")
             self.assertIn("exec driver Jkbms_Ble", result["text"])
             self.assertNotIn("hidden-value", result["text"])
+
+    def test_short_sysfs_value_with_page_sized_metadata_is_complete(self):
+        with tempfile.TemporaryDirectory() as root:
+            self.write(root, "/sys/class/net/vecan1/statistics/rx_packets", "1234567\n")
+            (Path(root) / "sys/class/net/vecan1/statistics/rx_packets").write_bytes(b"1234567\n")
+            reader = self.make_reader(root)
+            original_stat = Path.stat
+            def page_sized_stat(path, *args, **kwargs):
+                actual = original_stat(path, *args, **kwargs)
+                if path.name == "rx_packets":
+                    return SimpleNamespace(st_mode=actual.st_mode, st_size=4096)
+                return actual
+            with patch.object(Path, "stat", page_sized_stat):
+                result = reader.read("/sys/class/net/vecan1/statistics/rx_packets", 2048)
+        self.assertEqual(result["retained_bytes"], 8)
+        self.assertFalse(result["truncated"])
+
+    def test_head_and_tail_truncation_use_observed_content(self):
+        with tempfile.TemporaryDirectory() as root:
+            self.write(root, "/oversized", "0123456789")
+            for tail in (False, True):
+                with self.subTest(tail=tail):
+                    result = self.make_reader(root).read("/oversized", 4, tail=tail)
+                    self.assertTrue(result["truncated"])
+                    self.assertEqual(result["text"], "6789" if tail else "0123")
+            exact = self.make_reader(root).read("/oversized", 10)
+            self.assertFalse(exact["truncated"])
+
+    def test_exact_global_byte_boundary_reports_unverified_eof(self):
+        with tempfile.TemporaryDirectory() as root:
+            self.write(root, "/exact", "12345678")
+            reader = self.make_reader(root)
+            reader.bytes = snapshot.MAX_FILE_BYTES - 8
+            result = reader.read("/exact", 2048)
+        self.assertEqual(reader.bytes, snapshot.MAX_FILE_BYTES)
+        self.assertTrue(result["truncated"])
+        self.assertTrue(result["byte_budget_boundary_reached"])
 
     def test_reader_rejects_non_regular_file_and_expired_budget(self):
         with tempfile.TemporaryDirectory() as root:
