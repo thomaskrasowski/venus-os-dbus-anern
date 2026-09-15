@@ -73,6 +73,7 @@ No automatic installer or device-control capability is supplied.
 
 ## Documentation
 
+- [Owner-confirmed installation topology](docs/TOPOLOGY.md)
 - [English architecture and path map](docs/architecture.md)
 - [Polish introduction](README.pl.md)
 - [Development history](docs/HISTORY.md) and [handover](docs/CHAT-HANDOFF.md)
@@ -116,8 +117,15 @@ Home Assistant is reserved as a later additional source. Generate the synthetic
 preview with `python tools/power_diagnostics.py --demo`.
 
 The native [Grafana dashboard definition](monitoring/grafana-power-observatory.json)
-is published in Minizon Grafana under `60 - Client Services` as
-`Cerbo Power Observatory`. No matching live telemetry exists yet, so its panels
-correctly show no data until a reviewed collector exports the documented series.
+has a historically imported scaffold in Minizon Grafana under `60 - Client Services`
+as `Cerbo Power Observatory`. Cerbo-to-Grafana data integration and continuous
+collection are not implemented. The existing battery1 Bluetooth integration
+predates this repository work; no Cerbo runtime change or deployment has been
+made during this work.
+
+The finite [configuration snapshot](tools/cerbo_config_snapshot.py) helps the owner
+collect the CAN driver, service, selected-battery and shared-sensing evidence
+needed before considering a Bluetooth isolation test. Its
+[run instructions](docs/POWER-DIAGNOSTICS.md) describe the report and privacy limits.
 
 No Cerbo connection, installation or live hardware validation was performed.

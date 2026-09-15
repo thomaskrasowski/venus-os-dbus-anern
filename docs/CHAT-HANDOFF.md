@@ -22,11 +22,21 @@ Develop locally when requested. The owner tests, checks all settings and perform
 
 ## Electrical / control separation
 
-bat1 (628 Ah) belongs to inverter1, on a separate installation/phase from inverter2.
-bat2a (280 Ah in the original topology) belongs to inverter2 and the two real SmartSolar 250/70 chargers.
-The two banks must not be treated as one DC bank. Ask before assuming later parallel-battery changes.
-Native CAN bat2a was the intended controlling BMS for the real SmartSolars.
-The inverter also charges bat2a independently. This RS232 bridge does not coordinate charge limits.
+The owner's 2026-09-15 clarification supersedes the older single-pack description:
+
+- Installation1 / Grid Phase1: battery1 and inverter1. Existing
+  `dbus-serialbattery` / `Jkbms_Ble` provides the JK-BMS Bluetooth integration.
+- Installation2 / Grid Phase2: battery2a + battery2b in parallel on the DC side,
+  with inverter2. JK master/slave communication uses RS485-2; battery2a is the
+  CAN master on Cerbo `vecan1`, service `com.victronenergy.battery.socketcan_vecan1`,
+  and battery2b is the slave.
+
+Do not combine the two installations. Current capacities and which CAN fields
+describe a pack versus the parallel bank are
+not verified. The two SmartSolar 250/70 chargers belong to installation2 in
+earlier owner context and report `socketcan_vecan0` in supplied captures.
+Current DVCC selection remains pending. This RS232 bridge does not coordinate
+charge limits. See [TOPOLOGY.md](TOPOLOGY.md); exact BLE addresses stay private.
 
 ## Latest source state represented here
 
@@ -82,14 +92,16 @@ The optional Grid tools remain unmodified and must not be launched by assistants
 The owner requested a new power dashboard and advanced read-only diagnostics.
 Both batteries are described as JK-BMS; battery1 Bluetooth is currently handled
 by Cerbo GX, and battery2 CAN intermittently loses SOC while V/A remain visible.
-Exact models, firmware, current ratings/capacities and service mappings are not
-verified. The owner mentioned "600Amps"; do not reinterpret that as 600 Ah.
+At this stage exact models, firmware, ratings/capacities and service mappings
+were not verified. The owner mentioned "600Amps"; do not reinterpret that as
+600 Ah. See the later topology clarification for the current mapping.
 
 New offline-tested finite capture/report tools and an HTML dashboard are prepared;
 read [POWER-DIAGNOSTICS.md](POWER-DIAGNOSTICS.md). The dashboard distinguishes
 invalid SOC, missing service, observer errors and passive transport evidence.
 System battery/voltage source selection is captured because overview V/A can
-have a different source from SOC. No live fault or root cause is confirmed.
+have a different source from SOC. At that stage no live fault or root cause
+had been confirmed; the later owner-supplied captures below show CAN faults.
 
 Next input: owner-run service/version/source-selection output, then a short
 capture during a failure and exact service-to-bank mapping. Home Assistant is
@@ -110,16 +122,16 @@ or background polling was started.
 
 The owner ran `cerbo_diagnostics.py --samples 1` and supplied the output. The
 sample caught no `com.victronenergy.battery.*` service. System battery service,
-auto/active selection and SOC were invalid, while V/A came from the documented
-inverter2 voltage fallback. Therefore this observation is a complete battery
-service absence with fallback V/A, not proof of a BMS service publishing only
-some fields.
+auto/active selection and SOC were invalid, while voltage/current remained
+visible. The voltage source explicitly named inverter2; the source of the
+current was not established. This is battery service absence with fallback
+voltage, not proof of a BMS service publishing only some fields.
 
 `vecan1` was `ERROR-PASSIVE`; cumulative history showed 19 restarts, 52
 error-warning transitions, 67 error-passive transitions and 19 bus-off events.
 `vecan0` was `ERROR-ACTIVE` with zero such history, and both detected SmartSolar
-services named `socketcan_vecan0`. Treat `vecan1` as the leading battery2 CAN
-candidate until the physical/service mapping is verified. One sample cannot
+services named `socketcan_vecan0`. Later owner clarification identifies `vecan1`
+as the installation2 JK master CAN connection. The first sample alone cannot
 date the counter increments or identify cable, termination, power, BMS,
 transceiver, adapter or noise as the cause.
 
@@ -129,3 +141,32 @@ within-session deltas, and no longer duplicates one bulk D-Bus `NoReply` across
 every allowlisted path. This work was prepared and tested offline. No Cerbo
 connection, deployment, setting change, service action or hardware test was
 performed by the assistant.
+
+## Topology and configuration evidence — 2026-09-15
+
+The owner confirms no Cerbo runtime configuration changes or deployment since
+starting local Codex/repository work. The battery1 BLE integration was already
+present. The historical Grafana-only scaffold import remains recorded above;
+Cerbo/Grafana data integration and a deployed continuous collector do not exist.
+The owner reports CAN and battery1 BLE were implemented together, with dropouts
+starting together. There is no pre-BLE CAN-only baseline. This temporal
+association does not establish that BLE caused the CAN fault.
+
+Supplied evidence reports kernel `6.12.90-venus-4`, native `can-bus-bms` v0.71,
+and a BMS timeout followed by D-Bus disconnection at about 08:36:24 on September
+15. A kernel IRQ message maps to approximately 08:36:18 using the supplied
+clock anchor; that conversion is an estimate, not a verified exact timestamp.
+Later `ERROR-PASSIVE` state and frozen counters do not identify the exact stop
+instant or prove the cause. The daemon remained running after the timeout.
+
+`vesmart-server` package `0.5.14-r0` is installed, but no corresponding process or
+`/service` entry appeared in the supplied listings. Installation is not evidence
+that it was running. `bluetoothd` was running. `dbus-blebattery.0` is a likely
+battery1 supervisor association; its run configuration and status still need
+checking. These facts do not prove a Bluetooth/CAN causal link.
+
+The next owner-operated evidence step is the local, read-only
+`tools/cerbo_config_snapshot.py` described in [POWER-DIAGNOSTICS.md](POWER-DIAGNOSTICS.md).
+It records selected configuration and service state; no changes, restarts,
+connections or deployment were performed by the assistant. Current DVCC source
+selection and the master/slave CAN field semantics remain open.

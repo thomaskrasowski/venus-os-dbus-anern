@@ -53,7 +53,11 @@ The latest user update is that a replacement USB adapter works. Its by-id path i
 - Do not reintroduce a virtual Solar Charger just to improve a tile: it previously crashed systemcalc
   with a string FirmwareVersion and can affect DVCC current accounting.
 - Read-only D-Bus publication is not a guarantee of zero effects on system calculations.
-- Do not aggregate the independent bat1/inverter1 bank with bat2a/inverter2.
+- Do not aggregate installation1 (battery1/inverter1, Grid Phase1) with installation2
+  (battery2a + battery2b in parallel / inverter2, Grid Phase2). The installation2
+  JK master/slave link uses RS485-2: battery2a is the CAN master on vecan1 and
+  battery2b is the slave. Whether individual CAN fields aggregate both packs is unverified.
+  Use docs/TOPOLOGY.md for the owner's current mapping.
 - Do not fabricate grid W/A, charger DC current, SOC, charging phase or authoritative firmware identity.
 - Do not pin a new adapter to the old serial or silently fall back to the first ttyUSB device.
 - Do not edit `/data/rc.local` by replacing its entire contents. First capture and inspect it.

@@ -4,22 +4,44 @@ This repository records limitations instead of hiding them behind a working dash
 
 ## P1 - JK-BMS CAN / Bluetooth intermittent telemetry (owner report 2026-09-14)
 
-Battery2 on CAN sometimes loses SOC while voltage/current are visible.
-Battery1 Bluetooth on Cerbo also loses connection. Exact driver/model details
-and time-correlated captures are pending. An owner-supplied 2026-09-15 sample
-caught no battery D-Bus service, invalid system SOC/source selection, and
-fallback V/A from `com.victronenergy.inverter.anern2`. `vecan1` was
+Installation2's battery2a + battery2b form a parallel DC bank. Their JK
+master/slave link uses RS485-2: battery2a is the CAN master on Cerbo `vecan1`,
+and battery2b is the slave. Whether each CAN field describes one pack or the
+bank remains unknown. See [TOPOLOGY.md](TOPOLOGY.md) for the corrected owner mapping.
+Battery1 uses the pre-existing `dbus-serialbattery` / `Jkbms_Ble` integration
+on Cerbo and also loses Bluetooth connection. An owner-supplied 2026-09-15 sample
+caught no battery D-Bus service and invalid system SOC/source selection. The
+system voltage source named `com.victronenergy.inverter.anern2`; the still-visible
+current's source was not established. `vecan1` was
 `ERROR-PASSIVE`, with cumulative history of 19 bus-off events/restarts, 52
 error-warning transitions and 67 error-passive transitions. `vecan0`, which
 the two SmartSolar services named as their connection, was `ERROR-ACTIVE` with
-zero controller fault history. This strongly prioritizes `vecan1` observation,
-but does not prove its physical mapping or identify the electrical/root cause.
-Overview V/A can come from system fallback sources; this capture did not
-establish partial CAN delivery.
+zero controller fault history. This prioritizes `vecan1` observation, whose
+installation2 master connection the owner has now confirmed; it does not identify
+the electrical or software root cause.
+Overview measurements can have different sources; this capture established
+voltage fallback and did not establish partial CAN delivery.
 The new [finite capture and offline dashboard](POWER-DIAGNOSTICS.md) preserve
 source identity and validity for diagnosis. A compact CAN-only mode records
 counter deltas without opening D-Bus or CAN sockets. No root cause or live fix
 is claimed.
+
+Native `can-bus-bms` v0.71 logs explicitly show a BMS timeout and D-Bus
+disconnection near 2026-09-15 08:36:24, while the daemon later remains running.
+Kernel `6.12.90-venus-4` IRQ evidence is estimated near 08:36:18 using a clock
+anchor; the pairing is not an exact verified timestamp or proof of causation.
+Terminal `ERROR-PASSIVE` state and frozen counters do not establish the exact
+traffic-stop instant. `vesmart-server` `0.5.14-r0` being installed does not show it was
+running: the supplied process and `/service` listings did not show it.
+`bluetoothd` was running; the likely `dbus-blebattery.0` association still needs
+run/status evidence. Bluetooth correlation and live DVCC selection remain open.
+
+The owner confirms no Cerbo runtime configuration changes or deployment since
+starting local Codex/repository work; BLE predates it. The Grafana-only scaffold
+import did not implement Cerbo collection or Grafana data integration.
+The owner reports CAN and battery1 BLE were implemented together and dropouts
+started together. There is no pre-BLE CAN-only baseline; this timing does not
+prove that BLE causes the CAN fault.
 
 ## P0 - capture exact deployed source / adapter
 
