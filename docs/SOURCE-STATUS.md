@@ -39,3 +39,21 @@ outputs/ contains local guides and archives; none of these directories is publis
 All moved file contents were hash-verified. No driver, tool, service, test or
 monitoring-definition changes were made. No Cerbo connection was attempted.
 The owner performs deployment and checks all settings; see OWNER-RULES.md.
+
+## Read-only diagnostic preparation — 2026-09-14
+
+New local tools `tools/cerbo_diagnostics.py`, `tools/power_diagnostics.py`,
+`tools/power_dashboard.py` and `tools/power_demo.py` provide finite owner-run
+capture and offline visualization. The new HTML template and mapping example
+are in `monitoring/`. See [POWER-DIAGNOSTICS.md](POWER-DIAGNOSTICS.md).
+
+These additions are authored offline, not copied from or validated against live
+Cerbo software. The production driver, supervisor files and existing Grid
+tools are unchanged. Demo readings are entirely synthetic. No Cerbo connection
+or deployment occurred. Home Assistant collection remains future work.
+
+The generated native Grafana definition was published to Minizon Grafana on
+2026-09-14 as UID `cerbo-power-observatory` in `60 - Client Services` and read
+back at version 1. This authorized Grafana API write did not access Cerbo.
+Minizon Prometheus had no matching power-monitor/Cerbo/JK/Anern series, so the
+live dashboard contains no real readings yet.

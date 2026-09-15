@@ -1,0 +1,19 @@
+{
+  "devices": {
+    "com.victronenergy.battery.REPLACE_WITH_EXACT_BATTERY1_SERVICE": {
+      "label": "Battery 1 - JK-BMS",
+      "bank": "battery1",
+      "transport": "bluetooth"
+    },
+    "com.victronenergy.battery.REPLACE_WITH_EXACT_BATTERY2_SERVICE": {
+      "label": "Battery 2 - JK-BMS",
+      "bank": "battery2",
+      "transport": "can"
+    },
+    "com.victronenergy.inverter.anern2": {
+      "label": "Inverter 2",
+      "bank": "battery2",
+      "transport": "serial"
+    }
+  }
+}

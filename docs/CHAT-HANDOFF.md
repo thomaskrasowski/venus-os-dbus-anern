@@ -76,3 +76,32 @@ prohibited. No runtime code changes are requested while the owner tests.
 
 GitHub target: thomaskrasowski/venus-os-dbus-anern. Follow PUBLISH.md.
 The optional Grid tools remain unmodified and must not be launched by assistants.
+
+## Power diagnostics work — 2026-09-14
+
+The owner requested a new power dashboard and advanced read-only diagnostics.
+Both batteries are described as JK-BMS; battery1 Bluetooth is currently handled
+by Cerbo GX, and battery2 CAN intermittently loses SOC while V/A remain visible.
+Exact models, firmware, current ratings/capacities and service mappings are not
+verified. The owner mentioned "600Amps"; do not reinterpret that as 600 Ah.
+
+New offline-tested finite capture/report tools and an HTML dashboard are prepared;
+read [POWER-DIAGNOSTICS.md](POWER-DIAGNOSTICS.md). The dashboard distinguishes
+invalid SOC, missing service, observer errors and passive transport evidence.
+System battery/voltage source selection is captured because overview V/A can
+have a different source from SOC. No live fault or root cause is confirmed.
+
+Next input: owner-run service/version/source-selection output, then a short
+capture during a failure and exact service-to-bank mapping. Home Assistant is
+planned as an additional source; no second Bluetooth client is configured.
+Driver baseline and existing monitoring tools remain unchanged. No live access,
+deployment, settings changes or hardware test occurred. VRM missing PV tile
+and Grid ingestion remain open.
+
+On the owner's next request, the native `Cerbo Power Observatory` dashboard was
+published via the saved Minizon Grafana service account into `60 - Client
+Services`, UID `cerbo-power-observatory`, and read back at version 1. This was a
+Grafana-only connection. The Prometheus datasource returned zero matching
+Cerbo/JK/Anern/power-monitor metric names, so the dashboard is a truthful empty
+shell pending a separately reviewed continuous exporter. No Cerbo connection
+or background polling was started.
